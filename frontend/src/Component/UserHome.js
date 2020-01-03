@@ -40,10 +40,9 @@ export class UserProfile extends Component {
                     image_file: response.data.image_file,
                 })
             }).catch(err => {
-                if(err.status === 401){
-                    console.log(err);
-                    localStorage.removeItem('usertoken');
-                }
+                console.log(err);
+                localStorage.removeItem('usertoken');
+
             });
         }
     }

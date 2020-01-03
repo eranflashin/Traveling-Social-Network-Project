@@ -20,7 +20,26 @@ export const login = user => {
     })
         .catch(err => {
             console.log(err);
-            return 'error';
+            if (err.response && err.response.status === 404) {
+                axios({
+                    url: 'http://127.0.0.1:5000/api/token',
+                    method: 'GET',
+                    mode: 'cors',
+                },{
+                    auth: {
+                        username: user.email,
+                        password: user.password
+                    }
+                }).then(response => {
+                    localStorage.setItem('usertoken', response.data.token);
+                    return response.data.token;
+                }).catch(err => {
+                    console.log(err);
+                })
+            } else {
+                return 'loginError';
+            }
+
         });
 };
 
@@ -88,7 +107,7 @@ class Login extends Component {
 
         if (validateForm(this.state.errors)) {
             login(user).then(res => {
-                if (res !== 'error') {
+                if (res !== 'loginError') {
                     this.props.history.push(`/`)
                 } else {
                     this.setState({invalid: 1});
