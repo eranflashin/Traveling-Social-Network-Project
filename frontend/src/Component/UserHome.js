@@ -26,8 +26,8 @@ export class UserProfile extends Component {
             });
 
             axios.defaults.withCredentials = true;
-            axios.get('http://127.0.0.1:5000/api/users/' + decoded.id,{
-                auth:{
+            axios.get('http://127.0.0.1:5000/api/users/' + decoded.id, {
+                auth: {
                     username: localStorage.usertoken
                 }
             }).then((response) => {
@@ -54,7 +54,7 @@ export class UserProfile extends Component {
     logOut(e) {
         e.preventDefault();
         axios.defaults.withCredentials = true;
-        axios.get('http://127.0.0.1:5000/logout',{
+        axios.get('http://127.0.0.1:5000/logout', {
             auth: {
                 username: localStorage.usertoken
             }
@@ -70,26 +70,26 @@ export class UserProfile extends Component {
     render() {
         console.log(this.state.image_file);
         return (
-            <div className="profile-block">
+                <div className="profile-block">
 
-                <img className="profile-img"
-                     src={"http://127.0.0.1:5000" + this.state.image_file}
-                />
-                <h1 className="text-heading">{this.state.username}</h1>
-                <div className="text-secondary">
-                    {this.state.first_name + " " + this.state.last_name}
-                </div>
-                <div className="text-secondary">
-                    {this.state.birth_date}
-                </div>
-                <div className="text-secondary">
-                    {this.state.email}
-                </div>
-                <a href="" onClick={this.logOut.bind(this)} className="form-sub">
-                    Logout
-                </a>
+                    <img className="profile-img"
+                         src={"http://127.0.0.1:5000" + this.state.image_file}
+                         alt="profile image"/>
+                    <h1 className="text-heading">{this.state.username}</h1>
+                    <div className="text-secondary">
+                        {this.state.first_name + " " + this.state.last_name}
+                    </div>
+                    <div className="text-secondary">
+                        {this.state.birth_date}
+                    </div>
+                    <div className="text-secondary">
+                        {this.state.email}
+                    </div>
+                    <a href="" onClick={this.logOut.bind(this)} className="form-sub">
+                        Logout
+                    </a>
 
-            </div>
+                </div>
         );
     }
 }
