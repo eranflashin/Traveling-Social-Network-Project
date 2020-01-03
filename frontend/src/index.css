@@ -1,3 +1,5 @@
+/*---------Login Page -------*/
+
 .login-input {
     width: 250px;
     padding: 12px 20px;
@@ -75,7 +77,7 @@ html {
     margin-top: 30px;
 }
 
-.button.login button{
+.button.login button {
 
     width: 100%;
     line-height: 64px;
@@ -166,7 +168,92 @@ html {
     z-index: -1;
 }
 
-
 .error {
+    display: block;
+}
 
+
+/*--------Profile Page-------*/
+
+.profile-block {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.profile-img {
+    border-radius: 50%;
+}
+
+.logout-button {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: center;
+
+    font-size: 24px;
+    font-family: sans-serif;
+    font-weight: 300;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    width: 180px;
+    height: 30px;
+    border-radius: 16px;
+    background: #34ca92;
+    color: #fbfffd;
+    overflow: hidden;
+
+
+    transition: all 0.5s;
+}
+
+.logout-button:hover, .logout-button:active {
+    text-decoration: none;
+    color: #0C5;
+    border-color: #0C5;
+    background: transparent;
+}
+
+.logout-button span {
+    display: inline-block;
+    position: relative;
+    padding-right: 0;
+
+    transition: padding-right 0.5s;
+}
+
+.logout-button span:after {
+    content: ' ';
+    position: absolute;
+    top: 0;
+    right: -18px;
+    opacity: 0;
+    width: 10px;
+    height: 10px;
+    margin-top: -10px;
+
+    background: rgba(0, 0, 0, 0);
+    border: 3px solid #FFF;
+    border-top: none;
+    border-right: none;
+
+    transition: opacity 0.5s, top 0.5s, right 0.5s;
+    transform: rotate(-45deg);
+}
+
+.logout-button:hover span, .logout-button:active span {
+    padding-right: 30px;
+}
+
+.logout-button:hover span:after, .logout-button:active span:after {
+    transition: opacity 0.5s, top 0.5s, right 0.5s;
+    opacity: 1;
+    border-color: #0C5;
+    right: 0;
+    top: 50%;
 }

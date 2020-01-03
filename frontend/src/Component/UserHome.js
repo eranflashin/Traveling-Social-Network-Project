@@ -40,7 +40,10 @@ export class UserProfile extends Component {
                     image_file: response.data.image_file,
                 })
             }).catch(err => {
-                console.log(err)
+                if(err.status === 401){
+                    console.log(err);
+                    localStorage.removeItem('usertoken');
+                }
             });
         }
     }
@@ -60,7 +63,7 @@ export class UserProfile extends Component {
             }
         }).then(response => {
             localStorage.removeItem('usertoken');
-            this.props.history.push(`/`)
+            this.props.history.push('/');
         })
             .catch(err => {
                 console.log(err)
@@ -68,8 +71,13 @@ export class UserProfile extends Component {
     }
 
     render() {
-        console.log(this.state.image_file);
         return (
+
+            <>
+                <a href="" onClick={this.logOut.bind(this)} className="logout-button">
+                    <span>Logout</span>
+                </a>
+
                 <div className="profile-block">
 
                     <img className="profile-img"
@@ -85,11 +93,10 @@ export class UserProfile extends Component {
                     <div className="text-secondary">
                         {this.state.email}
                     </div>
-                    <a href="" onClick={this.logOut.bind(this)} className="form-sub">
-                        Logout
-                    </a>
 
                 </div>
+
+            </>
         );
     }
 }
