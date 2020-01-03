@@ -1,0 +1,33 @@
+User:
+	-id: the primary key for this class.
+	-username: a uniqe name for identifing the user in the website. 
+	-first\last name, birth date: general details about the user.
+	-email: uniqe address used to login.
+	-last seen: date since user was last active in the site.
+	-hashed password: used for login, hashed in order to not expose the password if someone steals the password list.
+	-image file: a picture's path of the user to show in the website, and a default one if he doesnt have one.
+	-posts: a relation from the user to a post he wrote for identifing users posts if he wishs to update, delete or view them.
+	-followed: a relation from the user to a follow object to know who he follows.
+	-follower: a relation from the user to a follow object to know who follows this user.
+	-subscription: a relation from the user to a subscribe object to know who are the posts he subscribes to.
+	-notafications: a relation from the user to a notafication object to know which notafications he has.
+
+Post:
+	-id: the primary key for this class.
+	-timestamp: when was post made/last edited, dependce on what we decide in the future.
+	-title,content : title and text content of the post.
+	-end_date,start_date: start and end of the travel for search function.
+	-country,city,latitude,longitude: where the travel takes place, used for the search function. 
+	-subscribers: a relation to a subscribe object to know who subscribed to our post.
+	
+Subscribe:
+	-user_id, post_id: the id's of the user and the post he subscribed to, both are primary keys.
+
+Follow:
+	-follower_id, followed_id: the id's of the user and the id of a user he follows, both are primary keys.
+
+Notification:
+	-id: primary key of notafication.
+	-user_id: id of users who recived a notafication.
+	-timestamp: date of when notafication was sent to the user.
+	-name, payload_json: the title and content of the notafication.
