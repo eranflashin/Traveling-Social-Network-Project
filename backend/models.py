@@ -1,38 +1,61 @@
 from datetime import datetime
 
 from flask import url_for
-from flask_login import UserMixin, AnonymousUserMixin
+from flask_login import UserMixin
 from backend import db, app
-from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
+from itsdangerous import (
+    TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
 from werkzeug.security import generate_password_hash, check_password_hash
-from time import time
 import json
 
 from math import sqrt
-
-
-# class Permission:
-#     VIEW_BASIC_INFO_AND_POSTS = 0x1
-#     EDIT_INFO_AND_ADD_POSTS = 0x2
-#     SEARCH_FOR_MEMBERS = 0x4
-#     VIEW_TRAVELS_ON_THE_MAP = 0x8
+from backend.utils import date_between
 
 
 class Notification(db.Model):
     __tablename__ = "notifications"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), index=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    timestamp = db.Column(db.Float, index=True, default=time)
-    payload_json = db.Column(db.Text)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    is_read = db.Column(db.Boolean, nullable=False, default=False)
+    payload_json = db.Column(db.Text, nullable=False)
 
     def get_data(self):
         return json.loads(str(self.payload_json))
 
+    def get_name(self):
+        return self.name
+
+    def is_read(self):
+        return self.is_read
+
+    def get_notified_user(self):
+        return self.user
+
+    def to_json(self):
+
+        json_notif = {
+            'user': {
+                'id': self.user_id,
+                'url': url_for('get_user', user_id=self.user_id)
+            },
+            'is_read': self.is_read,
+            'name': self.name,
+            'data': self.get_data()
+        }
+
+        return json_notif
+
+    def __repr__(self):
+        return "Notification to: {} , data: {}, is_read: {}".format(self.user_id, self.payload_json, self.is_read)
+
+
 class Follow(db.Model):
     __tablename__ = "follows"
-    follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    followed_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    follower_id = db.Column(
+        db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    followed_id = db.Column(
+        db.Integer, db.ForeignKey('users.id'), primary_key=True)
 
     def __repr__(self):
         return "Follow('{}' follows '{}'')".format(self.follower_id, self.followed_id)
@@ -40,8 +63,10 @@ class Follow(db.Model):
 
 class Subscribe(db.Model):
     __tablename__ = "subscriptions"
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'users.id'), primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey(
+        'posts.id'), primary_key=True)
 
     def __repr__(self):
         return "Subscription('user {} subscribes post {}')".format(self.user_id, self.post_id)
@@ -60,18 +85,45 @@ class Post(db.Model):
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
     content = db.Column(db.Text, nullable=False)
-    subscribers = db.relationship('Subscribe',foreign_keys=[Subscribe.post_id],
-                    backref=db.backref('post', lazy='joined'),
-                    lazy='dynamic',cascade='all, delete-orphan')
+    subscribers = db.relationship('Subscribe', foreign_keys=[Subscribe.post_id],
+                                  backref=db.backref('post', lazy='joined'),
+                                  lazy='dynamic', cascade='all, delete-orphan')
 
     def __repr__(self):
         return "Travel('post no: {}: '{}' by {}')".format(self.id, self.title, self.user_id)
 
-    def is_close(self,user_latitude:float,user_longitude:float, start_date:datetime,end_date:datetime,radius:float):
-        distance = sqrt((user_latitude-self.latitude)**2 - (user_longitude-self.longitude)**2)
+    def is_close_enough(self, other_post, radius: float):
+        distance = sqrt((other_post.latitude - self.latitude)**2 -
+                        (other_post.longitude - self.longitude)**2)
         if distance > radius:
             return False
-        return start_date == self.start_date and end_date == self.end_date
+        return date_between(self.start_date,self.end_date,other_post.start_date,other_post.end_date)
+
+    def to_json(self):
+        json_post = {
+            'url': url_for('get_post', post_id=self.id),
+            'title': self.title,
+            'owner': {
+                'id': self.user_id,
+                'url': url_for('get_user', user_id=self.user_id)
+            },
+            'last_edit_time': self.timestamp,
+            'dates': {
+                'start_date': self.start_date,
+                'end_date': self.end_date,
+            },
+            'location': {
+                'country': self.country,
+                'city': self.city,
+                'waypoint': {
+                    'longitude': self.longitude,
+                    'latitude': self.latitude,
+                }
+            },
+            'content': self.content,
+        }
+
+        return json_post
 
 
 class User(db.Model, UserMixin):
@@ -84,21 +136,23 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     hashed_password = db.Column(db.String(128), nullable=False)
-    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
+    image_file = db.Column(db.String(120), nullable=False,
+                           default='default.jpg')
     posts = db.relationship('Post', foreign_keys=[Post.user_id],
                             backref=db.backref('owner', lazy='joined'),
                             lazy='dynamic', cascade='all, delete-orphan')
     followed = db.relationship('Follow', foreign_keys=[Follow.follower_id],
                                backref=db.backref('follower', lazy='joined'),
                                lazy='dynamic', cascade='all, delete-orphan')
-    followers = db.relationship('Follow',foreign_keys=[Follow.followed_id],
+    followers = db.relationship('Follow', foreign_keys=[Follow.followed_id],
                                 backref=db.backref('followed', lazy='joined'),
                                 lazy='dynamic', cascade='all, delete-orphan')
-    subscriptions = db.relationship('Subscribe',foreign_keys=[Subscribe.user_id],
-                                    backref=db.backref('subscriber',lazy='joined'),
-                                    lazy='dynamic',cascade='all, delete-orphan')
-    notifications = db.relationship('Notification',foreign_keys=[Notification.user_id],
-                                    backref=db.backref('user'), lazy = 'dynamic',
+    subscriptions = db.relationship('Subscribe', foreign_keys=[Subscribe.user_id],
+                                    backref=db.backref(
+                                        'subscriber', lazy='joined'),
+                                    lazy='dynamic', cascade='all, delete-orphan')
+    notifications = db.relationship('Notification', foreign_keys=[Notification.user_id],
+                                    backref=db.backref('user'), lazy='dynamic',
                                     cascade='all, delete-orphan')
 
     def __repr__(self):
@@ -126,25 +180,25 @@ class User(db.Model, UserMixin):
 
         return self.followers.filter_by(follower_id=user.id).first() is not None
 
-    def get_post_feed_posts(self):
-        result_list = self.posts
-        for followed in self.followed:
-            result_list+=followed.posts
-        return result_list
-
-    def subscribe_to_post(self,post:Post):
+    def subscribe_to_post(self, post: Post):
         if not self.is_subscribed(post):
-            sub = Subscribe(subscriber=self,post=post)
+            sub = Subscribe(subscriber=self, post=post)
             db.session.add(sub)
 
-    def un_subscribe_from_post(self, post: Post):
-        sub = self.subscriptions.filter_by(subscriber=self,post=post).first()
+    def is_subscribed(self, post: Post):
+        if post.id is None:
+            return False
 
-        if sub:
+        return self.subscriptions.query.filter_by(subscriber=self, post=post).first() is not None
+
+    def unsubscribe_from_post(self, post: Post):
+        if self.is_subscribed(post):
+            sub = self.subscriptions.filter_by(
+                subscriber=self, post=post).first()
             db.session.delete(sub)
 
-    def generate_auth_token(self, expiration = 600):
-        s = Serializer(app.config['SECRET_KEY'],expires_in = expiration)
+    def generate_auth_token(self, expiration=600):
+        s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
         return s.dumps({'id': self.id})
 
     @staticmethod
@@ -164,76 +218,60 @@ class User(db.Model, UserMixin):
         raise AttributeError('password is not a readable attribute')
 
     @password.setter
-    def password(self,password):
+    def password(self, password):
         self.hashed_password = generate_password_hash(password)
 
     def verify_password(self, password):
         return check_password_hash(self.hashed_password, password)
 
-    def num_of_new_notifications(self):
-        last_read_time = self.last_notification_read_time or datetime(1900, 1, 1)
-        return self.notifications.filter_by(recipient=self).\
-            filter(Notification.timestamp > last_read_time).count()
-
     def add_notification(self, name, data):
         self.notifications.filter_by(name=name).delete()
-        notification = Notification(name=name,payload_json=json.dumps(data),user=self)
+        notification = Notification(
+            name=name, payload_json=json.dumps(data), user=self)
         db.session.add(notification)
         return notification
 
+    def get_new_notifications(self):
+        new_notifs = self.notifications.filter(
+            Notification.is_read == False).all()
+
+        return json.dumps([notif.to_json() for notif in new_notifs])
+
+    def num_of_new_notifications(self):
+        return self.notifications.filter(Notification.is_read == False).count()
+
+    def num_of_followers(self):
+        return self.followers.count()
+
+    def num_of_followed(self):
+        return self.followed.count()
+
+    def get_followers(self):
+        followers = self.followers.all()
+        return json.dumps([follower for follower in followers])
+
+    def get_followed(self):
+        followed = self.followed.all()
+        return json.dumps([followed for followed in followed])
+
     def to_json(self):
-        image_file = url_for('static', filename='profile_pics/' + self.image_file)
 
         json_user = {
-            'url': url_for('get_user',user_id=self.id, _external=True),
-            'username': self.username,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
+            'url': url_for('get_user', user_id=self.id, _external=True),
+            'names': {
+                'username': self.username,
+                'first_name': self.first_name,
+                'last_name': self.last_name
+            },
             'email': self.email,
             'last_seen': self.last_seen,
-            'image_file': image_file
+            'image_file': url_for('static', filename='profile_pics/' + self.image_file),
+            'posts': url_for('get_all_posts', user_id=self.id),
+            'followers': url_for('get_followers', user_id=self.id),
+            'followed': url_for('get_followed', user_id=self.id)
         }
 
         if self.birth_date is not None:
-            json_user['birth_date']=self.birth_date
+            json_user['birth_date'] = self.birth_date
 
         return json_user
-
-    # def can(self,permissionRequired,onUser:str=None):
-    #     selfPermission = 0x01
-
-
-class AnonymousUser(AnonymousUserMixin):
-    def can(self, permissionsRequired):
-        return False
-
-
-# if __name__ == "__main__":
-#     db.drop_all()
-#     db.session.commit()
-#     db.create_all()
-#
-#     User1 = User(username="user1",first_name="fname1",last_name="lname1",gender="m",email="user1@gmail.com",
-#                  hashed_password="%898f")
-#     User2 = User(username="user2",first_name="fname2",last_name="lname2",gender="f",email="user2@gmail.com",
-#                  hashed_password="564*&")
-#     User3 = User(username="user3",first_name="fname3",last_name="lname3",gender="m",email="user3@gmail.com",
-#                  hashed_password="%f8r8f")
-#
-#     Post1=Post(title="Post1",owner=User2,start_date=datetime(2019,12,30),end_date=datetime(2020,1,12),country="UK",
-#                city="London",latitude=12.5,longitude=24.5,content="Almost two weeks in London")
-#     Post2=Post(title="Post2",owner=User2,start_date=datetime(2020,1,5),end_date=datetime(2020,1,12),country="USA",
-#                city="NYC",latitude=24.5,longitude=12.5,content="Some days in NYC")
-#     Post3=Post(title="Post3",owner=User3,start_date=datetime(2019,12,30),end_date=datetime(2020,1,12),country="Israel",
-#                city="TLV",latitude=23.5,longitude=22.5,content="TLV!")
-#
-#     fol1 = Follow(follower=User1, followed=User2)
-#     fol2 = Follow(follower=User2, followed=User3)
-#     fol3 = Follow(follower=User2, followed=User1)
-#
-#     sub1 = Subscribe(post=Post1, subscriber=User1)
-#     sub2 = Subscribe(post=Post1, subscriber=User2)
-#     sub3 = Subscribe(post=Post2, subscriber=User2)
-#
-#     db.session.add_all([User1,User2,User3,Post1,Post2,Post3,fol1,fol2,fol3,sub1,sub2,sub3])
-#     db.session.commit()

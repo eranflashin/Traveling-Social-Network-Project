@@ -1,15 +1,11 @@
 from datetime import datetime
 
 from flask import request, jsonify, url_for, g
-from flask_httpauth import HTTPBasicAuth
 from flask_login import logout_user, current_user, login_user
 from flask_restful import abort
 
-from backend import app, db
+from backend import app, db, auth
 from backend.models import User
-
-
-auth = HTTPBasicAuth()
 
 
 @app.route('/api/token', methods=['GET'])
@@ -28,13 +24,31 @@ def get_user(user_id):
     return user.to_json(), 201
 
 
+# @app.route('api/posts/<int:post_id>', methods=['GET'])
+# @auth.login_required
+# def get_post(post_id):
+#     post = Post.query.get(post_id)
+#     if not post:
+#         abort(404)
+#     return post.to_json(), 201
+
+
+# @app.route('api/posts/', methods=['GET'])
+# @auth.login_required
+# def get_posts():
+#     post = Post.query.get()
+#     if not post:
+#         abort(404)
+#     return post.to_json(), 201
+
+
 @app.route("/api/users/<string:name>", methods=['GET'])
 @auth.login_required
 def get_user_id(name):
     user = User.query.filter_by(username=name).first()
     if not user:
         abort(404)
-    return jsonify({'id': user.id}), 201, {'Location': url_for('get_user',user_id=user.id, _external=True)}
+    return jsonify({'id': user.id}), 201, {'Location': url_for('get_user', user_id=user.id, _external=True)}
 
 
 @app.route('/register', methods=['POST'])
@@ -63,8 +77,8 @@ def register_user():
         user.birth_date = datetime.strptime(data['birth_date'], '%Y-%m-%d')
     db.session.add(user)
     db.session.commit()
-    return jsonify({'status': 'created','username': user.username}), 201, {'Location': url_for('get_user', user_id=user.id,
-                                                                                               _external=True)}
+    return jsonify({'status': 'created', 'username': user.username}), 201, {'Location': url_for('get_user', user_id=user.id,
+                                                                                                _external=True)}
 
 
 @app.route("/login", methods=['GET', 'POST'])

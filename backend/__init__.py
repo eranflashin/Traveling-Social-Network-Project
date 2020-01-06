@@ -2,6 +2,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_cors import CORS
+from flask_httpauth import HTTPBasicAuth
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -12,10 +14,11 @@ app.config['JWT_SECRET_KEY'] = '8CF2A6D994091D43B2AC1343346DA96D0C4E48D089EE4C58
 app.debug = True
 db = SQLAlchemy(app)
 CORS(app, supports_credentials=True)
+auth = HTTPBasicAuth()
 
 login_manager = LoginManager(app)
 login_manager.session_protection = 'strong'
 login_manager.login_view = 'login'
 login_manager.init_app(app)
 
-from backend import routes, errors, utils
+from backend import routes, errors, utils, models
