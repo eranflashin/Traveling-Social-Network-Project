@@ -1,12 +1,30 @@
 import binascii
 import os
 from datetime import datetime
+import re
 
 from PIL import Image
 from flask import g
 from flask_login import current_user
 
 from backend import login_manager, app, db, models, auth
+from email_validator import validate_email, EmailNotValidError
+
+
+def is_email_valid(email: str):
+    try:
+        validate_email(email)
+        return True
+    except EmailNotValidError:
+        return False
+
+
+def is_date_valid(date: str):
+    try:
+        datetime.strptime(date, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
 
 
 @app.before_first_request
@@ -31,8 +49,9 @@ def load_user(user_id):
 def verify_password(username_or_token, password):
     user = models.User.verify_auth_token(username_or_token)
     if not user:
-        user = models.User.query.filter_by(username=username_or_token).first()
+        user = models.User.query.filter_by(email=username_or_token).first()
         if not user or not user.verify_password(password):
+            g.user = models.AnonymousUser()
             return False
     g.user = user
     return True

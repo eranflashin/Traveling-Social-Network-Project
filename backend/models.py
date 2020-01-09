@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from flask import url_for
-from flask_login import UserMixin
+from flask_login import UserMixin, AnonymousUserMixin
 from backend import db, app
 from itsdangerous import (
     TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
@@ -26,7 +26,7 @@ class Notification(db.Model):
     def get_name(self):
         return self.name
 
-    def is_read(self):
+    def get_is_read(self):
         return self.is_read
 
     def get_notified_user(self):
@@ -37,7 +37,7 @@ class Notification(db.Model):
         json_notif = {
             'user': {
                 'id': self.user_id,
-                'url': url_for('get_user', user_id=self.user_id)
+                'url': url_for('get_user', user_id=self.user_id, _external=True)
             },
             'is_read': self.is_read,
             'name': self.name,
@@ -97,15 +97,15 @@ class Post(db.Model):
                         (other_post.longitude - self.longitude)**2)
         if distance > radius:
             return False
-        return date_between(self.start_date,self.end_date,other_post.start_date,other_post.end_date)
+        return date_between(self.start_date, self.end_date, other_post.start_date, other_post.end_date)
 
     def to_json(self):
         json_post = {
-            'url': url_for('get_post', post_id=self.id),
+            'url': url_for('get_post', post_id=self.id, _external=True),
             'title': self.title,
             'owner': {
                 'id': self.user_id,
-                'url': url_for('get_user', user_id=self.user_id)
+                'url': url_for('get_user', user_id=self.user_id, _external=True)
             },
             'last_edit_time': self.timestamp,
             'dates': {
@@ -131,6 +131,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     first_name = db.Column(db.String(20), nullable=False)
+    gender = db.Column(db.String(10),nullable=False)
     last_name = db.Column(db.String(20), nullable=False)
     birth_date = db.Column(db.Date())
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -248,11 +249,15 @@ class User(db.Model, UserMixin):
 
     def get_followers(self):
         followers = self.followers.all()
-        return json.dumps([follower for follower in followers])
+        return {follower.id: follower.to_json() for follower in followers}
 
     def get_followed(self):
-        followed = self.followed.all()
-        return json.dumps([followed for followed in followed])
+        followeds = self.followed.all()
+        return {followed.id: followed.to_json() for followed in followeds}
+
+    def get_posts(self):
+        posts = self.posts.all()
+        return {post.id: post.to_json() for post in posts}
 
     def to_json(self):
 
@@ -263,15 +268,20 @@ class User(db.Model, UserMixin):
                 'first_name': self.first_name,
                 'last_name': self.last_name
             },
+            'gender': self.gender,
             'email': self.email,
             'last_seen': self.last_seen,
             'image_file': url_for('static', filename='profile_pics/' + self.image_file),
-            'posts': url_for('get_all_posts', user_id=self.id),
-            'followers': url_for('get_followers', user_id=self.id),
-            'followed': url_for('get_followed', user_id=self.id)
+            'posts': url_for('get_all_posts', user_id=self.id, _external=True),
+            'followers': self.get_followers(),
+            'followed': self.get_followed()
         }
 
         if self.birth_date is not None:
             json_user['birth_date'] = self.birth_date
 
         return json_user
+
+
+class AnonymousUser(AnonymousUserMixin):
+    pass

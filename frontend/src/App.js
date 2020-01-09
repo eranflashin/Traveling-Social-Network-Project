@@ -1,37 +1,56 @@
-import React, {Component} from 'react';
-import {BrowserRouter as Router, Redirect, Route} from 'react-router-dom';
+import React, { Component } from "react";
+import { BrowserRouter as Router, Redirect, Route } from "react-router-dom";
 
-import Login from './Component/Login';
-import {UserProfile} from './Component/UserHome';
+import Landing from "./Component/Landing";
+import { UserProfile } from "./Component/Profile";
 
 function isLoggedIn() {
-    return !!localStorage.usertoken;
+  return !!localStorage.usertoken;
 }
 
 class App extends Component {
-    render() {
-        return (
-            <Router>
-                <div className="App">
-                    <Route exact path="/" render={(props) => (
-                        isLoggedIn()? (<UserProfile {...props} />) : (<Redirect to={"/login"}/>)
-                    )}/>
+  render() {
+    return (
+      <Router>
+        <div className="App">
+          <Route
+            exact
+            path="/"
+            render={props =>
+              isLoggedIn() ? (
+                <UserProfile {...props} />
+              ) : (
+                <Redirect to={"/landing"} />
+              )
+            }
+          />
 
-                    <Route exact path="/login" render={(props) => (
-                        !isLoggedIn() ? (
-                            <Login {...props} />) : (<Redirect to="/userHome"/>)
-                    )}/>
-                    <Route exact path="/userHome" render={(props) => (
-                        isLoggedIn() ? (
-                            <UserProfile {...props} />) : (<Redirect to="/login"/>)
-                    )}/>
-
-                </div>
-            </Router>
-        );
-    }
+          <Route
+            exact
+            path="/landing"
+            render={props =>
+              !isLoggedIn() ? (
+                <Landing {...props} />
+              ) : (
+                <Redirect to="/profile" />
+              )
+            }
+          />
+          <Route
+            exact
+            path="/profile"
+            render={props =>
+              isLoggedIn() ? (
+                <UserProfile {...props} />
+              ) : (
+                <Redirect to="/landing" />
+              )
+            }
+          />
+        </div>
+      </Router>
+    );
+  }
 }
-
-
 
 export default App;

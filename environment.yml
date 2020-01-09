@@ -85,5 +85,5 @@ dependencies:
   - pip:
       - cryptography==1.0.2
       - flask-pagedown==0.2.2
+      - email_validator==1.0.5
 prefix: E:\Anaconda\envs\web_course
-
