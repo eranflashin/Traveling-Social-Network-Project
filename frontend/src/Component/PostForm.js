@@ -82,7 +82,6 @@ export default class PostForm extends Component {
   }
 
   render() {
-    console.log(this.state);
     return (
       <>
         <Modal

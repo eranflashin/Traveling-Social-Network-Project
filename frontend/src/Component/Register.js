@@ -160,6 +160,8 @@ class Register extends Component {
     } else {
       this.setState({ invalid: 1 });
     }
+
+    console.log(this.postRf.state);
   }
 
   handle_new_post_press = () => {
