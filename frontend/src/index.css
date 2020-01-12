@@ -9,23 +9,33 @@
   border-top-left-radius: 10px;
 }
 
-.myForm {
-  width: 100%;
+.myForm,
+.react-datepicker__input-container input,
+.postContents {
+  width: 50%;
   margin: 10px;
   height: 17px;
   margin-left: 1px;
-  display: inline-block;
+  display: block;
   box-sizing: border-box;
   background: transparent;
   border: none;
-  box-shadow: -8px 10px 0px -7px #c8d1f0, 8px 10px 0px -7px #c8d1f0;
+  box-shadow: -8px 10px 3px -7px #c8d1f0;
   -webkit-transition: box-shadow 0.3s;
   transition: box-shadow 0.3s;
 }
 
-.myForm:focus {
+.myForm:focus,
+.react-datepicker__input-container input:focus,
+.postContents:focus {
   outline: none;
-  box-shadow: -8px 10px 0px -7px midnightblue, 8px 10px 0px -7px midnightblue;
+  box-shadow: -8px 10px 3px -7px midnightblue;
+}
+
+#loginEmail,
+#loginPassword {
+  margin-top: 90px;
+  margin-bottom: 60px;
 }
 
 .form-container {
@@ -308,4 +318,48 @@ html {
   font-weight: bold;
   letter-spacing: 1px;
   font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+}
+
+.col#mapCol {
+  border-left: 3px dashed midnightblue;
+}
+
+.leaflet-container {
+  display: block;
+  position: relative;
+  height: 50vh;
+}
+
+.postContents {
+  border-radius: 10px;
+  box-shadow: 0px 0px 0px 5px #c8d1f0;
+  height: 100%;
+  width: 100%;
+  margin-left: 10px;
+}
+
+textarea.postContents {
+  resize: vertical;
+  min-height: 20vh;
+}
+
+.postContents:focus {
+  box-shadow: 0px 0px 0px 5px midnightblue;
+}
+
+.row {
+  justify-content: center;
+}
+
+.react-daterange-picker__wrapper {
+  margin: 20px;
+}
+
+.leaflet-control-zoom {
+  top: 8vh;
+}
+
+.react-calendar,
+.react-calendar--selectRange {
+  max-width: 80% !important;
 }

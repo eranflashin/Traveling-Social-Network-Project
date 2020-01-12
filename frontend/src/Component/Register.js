@@ -43,13 +43,19 @@ class Register extends Component {
   constructor() {
     super();
     this.state = {
-      username: "",
-      first_name: "",
-      last_name: "",
-      gender: "",
-      birth_date: new Date(),
-      email: "",
-      password: "",
+      pressed_new_post: false,
+      data: {
+        username: "",
+        first_name: "",
+        last_name: "",
+        gender: "",
+        birth_date: new Date(),
+        email: "",
+        password: ""
+      },
+      user_taken: 0,
+      email_taken: 0,
+      invalid: 0,
       errors: {
         username: "",
         email: "",
@@ -57,10 +63,7 @@ class Register extends Component {
         first_name: "",
         last_name: "",
         gender: "Please choose your gender"
-      },
-      user_taken: 0,
-      email_taken: 0,
-      invalid: 0
+      }
     };
 
     this.onChange = this.onChange.bind(this);
@@ -69,14 +72,15 @@ class Register extends Component {
 
   handleChange = date => {
     this.setState({
-      birth_date: date
+      data: { ...this.state.data, birth_date: date }
     });
   };
   onChange(e) {
-    //  e.preventDefault()
     let errors = this.state.errors;
     const { name, value } = e.target;
-    this.setState({ [e.target.name]: e.target.value });
+    this.setState({
+      data: { ...this.state.data, [e.target.name]: e.target.value }
+    });
 
     switch (name) {
       case "username":
@@ -124,13 +128,13 @@ class Register extends Component {
       processed_birth_date.getDate();
 
     const newUser = {
-      username: this.state.username,
-      first_name: this.state.first_name,
-      last_name: this.state.last_name,
-      gender: this.state.gender,
+      username: this.state.data.username,
+      first_name: this.state.data.first_name,
+      last_name: this.state.data.last_name,
+      gender: this.state.data.gender,
       birth_date: processed_birth_date,
-      email: this.state.email,
-      password: this.state.password
+      email: this.state.data.email,
+      password: this.state.data.password
     };
 
     if (validateForm(this.state.errors)) {
@@ -158,9 +162,10 @@ class Register extends Component {
     }
   }
 
-  // addPost(e) {
-  //   this.btn.setAttribute("disabled", "");
-  // }
+  handle_new_post_press = () => {
+    this.setState({ pressed_new_post: true });
+    this.postRf.setState({ show: true });
+  };
 
   render() {
     return (
@@ -173,14 +178,14 @@ class Register extends Component {
             className="myForm"
             name="username"
             placeholder="Enter your username"
-            value={this.state.username}
+            value={this.state.data.username}
             onChange={this.onChange}
             noValidate
           />
           {this.state.errors.username.length > 0 && (
             <span className="error">{this.state.errors.username}</span>
           )}
-          {this.state.user_taken > 0 && (
+          {this.state.data.user_taken > 0 && (
             <span className="error">This username is taken</span>
           )}
         </div>
@@ -191,7 +196,7 @@ class Register extends Component {
             className="myForm"
             name="first_name"
             placeholder="Enter your first name"
-            value={this.state.first_name}
+            value={this.state.data.first_name}
             onChange={this.onChange}
             noValidate
           />
@@ -206,7 +211,7 @@ class Register extends Component {
             className="myForm"
             name="last_name"
             placeholder="Enter your last name"
-            value={this.state.last_name}
+            value={this.state.data.last_name}
             onChange={this.onChange}
             noValidate
           />
@@ -247,7 +252,7 @@ class Register extends Component {
           <br></br>
           <DatePicker
             name="birth_date"
-            selected={this.state.birth_date}
+            selected={this.state.data.birth_date}
             onChange={this.handleChange}
             dateFormat="dd/MM/yyyy"
             maxDate={new Date()}
@@ -260,14 +265,14 @@ class Register extends Component {
             className="myForm"
             name="email"
             placeholder="Enter email"
-            value={this.state.email}
+            value={this.state.data.email}
             onChange={this.onChange}
             noValidate
           />
           {this.state.errors.email.length > 0 && (
             <span className="error">{this.state.errors.email}</span>
           )}
-          {this.state.email_taken > 0 && (
+          {this.state.data.email_taken > 0 && (
             <span className="error">This email is taken</span>
           )}
         </div>
@@ -278,7 +283,7 @@ class Register extends Component {
             className="myForm"
             name="password"
             placeholder="Password"
-            value={this.state.password}
+            value={this.state.data.password}
             onChange={this.onChange}
             noValidate
           />
@@ -291,10 +296,29 @@ class Register extends Component {
             <button>
               <span>Register!</span> <i className="fa" />
             </button>
-            <PostForm />
+            <PostForm ref={ref => (this.postRf = ref)} />
+            {this.state.pressed_new_post ? (
+              <button
+                type="button"
+                className="editPostButton"
+                onClick={this.handle_new_post_press}
+              >
+                <i className="fa" />
+                <span>Edit Post</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="addPostButton"
+                onClick={this.handle_new_post_press}
+              >
+                <i className="fa" />
+                <span>Add Post</span>
+              </button>
+            )}
           </div>
 
-          {this.state.invalid > 0 && (
+          {this.state.data.invalid > 0 && (
             <Alert color="danger">
               Your registration is invalid. Please try again!
             </Alert>

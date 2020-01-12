@@ -120,6 +120,7 @@ export default class Login extends Component {
         <h1 className="header">Login</h1>
         <div className="form-group">
           <input
+            id="loginEmail"
             type="email"
             className="myForm"
             name="email"
@@ -134,6 +135,7 @@ export default class Login extends Component {
         </div>
         <div className="form-group">
           <input
+            id="loginPassword"
             type="password"
             className="myForm"
             name="password"
