@@ -259,6 +259,7 @@ class User(db.Model, UserMixin):
         posts = self.posts.all()
         return {post.id: post.to_json() for post in posts}
 
+
     def to_json(self):
 
         json_user = {

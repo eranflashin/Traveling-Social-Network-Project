@@ -51,30 +51,10 @@ export class UserProfile extends Component {
     }
   }
 
-  logOut(e) {
-    e.preventDefault();
-    axios.defaults.withCredentials = true;
-    axios
-      .get("http://127.0.0.1:5000/logout", {
-        headers: {
-          Authorization: "Basic " + btoa(localStorage.usertoken + ":")
-        }
-      })
-      .then(response => {
-        localStorage.removeItem("usertoken");
-        this.props.history.push("/");
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }
 
   render() {
     return (
       <>
-        <a href="" onClick={this.logOut.bind(this)} className="logout-button">
-          <span>Logout</span>
-        </a>
 
         <div className="profile-block">
           <img
