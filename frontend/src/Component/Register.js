@@ -119,7 +119,7 @@ class Register extends Component {
     this.setState({ user_taken: 0 });
     this.setState({ email_taken: 0 });
 
-    let processed_birth_date = new Date(this.state.birth_date);
+    let processed_birth_date = new Date(this.state.data.birth_date);
     processed_birth_date =
       processed_birth_date.getFullYear() +
       "-" +
