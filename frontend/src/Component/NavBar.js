@@ -68,9 +68,12 @@ class Navbar extends Component {
           Authorization: "Basic " + btoa(localStorage.usertoken + ":")
         }
       }).then((response) => {
-            this.setState({notifications: response.data.notifications});
+            if(response.data.notifications)
+                this.setState({notifications: response.data.notifications});
+            else
+                this.setState({notifications: [{'name': 'empty', 'data': 'no notifs'}]});
         }).catch(err => {
-            this.setState({notifications: []});
+            this.setState({notifications: [{'name': 'empty', 'data': 'no notifs'}]});
 
         });
 
