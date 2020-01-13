@@ -36,7 +36,5 @@ def conflict(e):
 
 
 @auth.error_handler
-def auth_error(e):
-    if 'message' in e.data:
-        return e.data['message'], 403
+def auth_error():
     return Forbidden(), 403

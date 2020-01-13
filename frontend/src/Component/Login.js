@@ -102,13 +102,15 @@ export default class Login extends Component {
     };
 
     if (validateForm(this.state.errors)) {
-      login(user).then(res => {
-        if (res !== "loginError") {
-          this.props.history.push(`/profile`);
-        } else {
-          this.setState({ invalid: 1 });
-        }
-      });
+      login(user)
+        .then(res => {
+          if (res !== "loginError") {
+            this.props.history.push(`/profile`);
+          } else {
+            this.setState({ invalid: 1 });
+          }
+        })
+        .catch(err => console.log(err));
     } else {
       this.setState({ invalid: 1 });
     }
