@@ -34,38 +34,36 @@ def get_user_id(name):
 
 @app.route('/register', methods=['POST'])
 def register_user():
-    if current_user.is_authenticated:
-        abort(400, message='Already Logged In')
     data = request.get_json()
-
-    if not data or 'email' not in data or 'password' not in data \
-            or 'first_name' not in data or 'last_name' not in data \
-            or 'username' not in data or 'birth_date' not in data or 'gender' not in data:
-        abort(400, message="Bad Json")
-
-    if len(data['email']) > 120 or len(data['first_name']) > 20 or len(data['last_name']) > 20 or \
-            len(data['username']) > 20 or not utils.is_email_valid(data['email']) or not utils.is_date_valid(
-        data['birth_date']):
-        abort(400, message="Bad Json")
-
-    if models.User.query.filter_by(email=data['email']).first() is not None:
-        abort(409, message="Email Taken")
-
-    if models.User.query.filter_by(username=data['username']).first() is not None:
-        abort(409, message='Username Taken')
-
-    # noinspection PyArgumentList
-    user = models.User(username=data['username'], first_name=data['first_name'],
-                       last_name=data['last_name'], password=data['password'],
-                       email=data['email'], birth_date=datetime.strptime(data['birth_date'], '%Y-%m-%d'),
-                       gender=data['gender'])
-    if 'image_file' in data:
-        user.image_file = data['image_file']
+    user = utils.make_new_user_or_abort(data)
     db.session.add(user)
     db.session.commit()
     return jsonify({'message': 'Created', 'username': user.username}), 201, {
         'Location': url_for('get_user', user_id=user.id,
                             _external=True)}
+                    
+
+@app.route('/registerAndPost', methods=['POST'])
+def register_and_post():
+    data = request.get_json()
+    try:
+        user = utils.make_new_user_or_abort(data['user'])
+    
+        db.session.add(user)
+        db.session.flush()
+        post = utils.make_new_post_or_abort(data['post'],user)
+
+        db.session.add(post)
+    except Exception as e:
+        db.session.rollback()
+        raise e
+    
+    db.session.commit()
+    
+    return jsonify({'message': 'Created', 'username': user.username, 'post_id': post.id}), 201, {
+        'Location': url_for('get_user', user_id=user.id,
+                            _external=True)}
+
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -133,20 +131,7 @@ def get_all_posts(user_id):
 @auth.login_required
 def add_post():
     data = request.get_json()
-
-    if not data or 'title' not in data or 'start_date' not in data or \
-            'end_date' not in data or 'country' not in data or 'city' not in data or \
-            'latitude' not in data or 'longitude' not in data or 'content' not in data:
-        abort(400, message="Bad Json")
-
-    if not utils.is_date_valid(data['start_date']) or not utils.is_date_valid(data['end_date']):
-        abort(400, message="Bad Dates")
-
-    new_post = models.Post(title=data['title'], user_id=current_user.id,
-                           start_date=datetime.strptime(data['start_date'], '%Y-%m-%d'),
-                           end_date=datetime.strptime(data['end_date'], '%Y-%m-%d'), country=data['country'],
-                           city=data['city'],
-                           latitude=data['latitude'], longitude=data['longitude'], content=data['content'])
+    new_post = utils.make_new_post_or_abort(data)
     db.session.add(new_post)
     db.session.commit()
     return jsonify({'status': 'success', 'post_id': new_post.id}), 201, {
@@ -164,7 +149,7 @@ def update_post(post_id):
             'latitude' not in data or 'longitude' not in data or 'content' not in data:
         abort(400, message="bad_json")
 
-    if not utils.is_date_valid(data['start_date']) or not utils.is_date_valid(data['end_date']):
+    if not utils.is_date_valid(data['start_date']) or not utils.is_date_valid(data['end_date']) or not utils.dates_are_ordered(date['start_date'],date['end_date']):
         abort(400, message="Bad Dates")
 
     old_post = models.Post.query.get(post_id)

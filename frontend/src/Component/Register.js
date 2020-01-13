@@ -6,6 +6,18 @@ import axios from "axios";
 import { login } from "./Login";
 import PostForm from "./PostForm";
 
+const processDate = date => {
+  let processed_date = new Date(date);
+  processed_date =
+    processed_date.getFullYear() +
+    "-" +
+    (processed_date.getMonth() + 1) +
+    "-" +
+    processed_date.getDate();
+
+  return processed_date;
+};
+
 export const register = newUser => {
   return axios
     .post("http://127.0.0.1:5000/register", {
@@ -24,7 +36,42 @@ export const register = newUser => {
       if (err.response && err.response.status === 409) {
         return err.response.data;
       } else {
-        return "invalid request";
+        console.log("invalid request");
+      }
+    });
+};
+
+const registerAndPost = (newUser, newPost) => {
+  return axios
+    .post("http://127.0.0.1:5000/registerAndPost", {
+      user: {
+        username: newUser.username,
+        first_name: newUser.first_name,
+        last_name: newUser.last_name,
+        gender: newUser.gender,
+        birth_date: newUser.birth_date,
+        email: newUser.email,
+        password: newUser.password
+      },
+      post: {
+        title: newPost.title,
+        content: newPost.content,
+        start_date: newPost.start_date,
+        end_date: newPost.end_date,
+        country: newPost.country,
+        city: newPost.city,
+        longitude: newPost.longitude,
+        latitude: newPost.latitude
+      }
+    })
+    .then(response => {
+      return response.data.message;
+    })
+    .catch(err => {
+      if (err.response && err.response.status === 409) {
+        return err.response.data;
+      } else {
+        console.log("invalid request");
       }
     });
 };
@@ -119,49 +166,74 @@ class Register extends Component {
     this.setState({ user_taken: 0 });
     this.setState({ email_taken: 0 });
 
-    let processed_birth_date = new Date(this.state.data.birth_date);
-    processed_birth_date =
-      processed_birth_date.getFullYear() +
-      "-" +
-      (processed_birth_date.getMonth() + 1) +
-      "-" +
-      processed_birth_date.getDate();
-
     const newUser = {
       username: this.state.data.username,
       first_name: this.state.data.first_name,
       last_name: this.state.data.last_name,
       gender: this.state.data.gender,
-      birth_date: processed_birth_date,
+      birth_date: processDate(this.state.data.birth_date),
       email: this.state.data.email,
       password: this.state.data.password
     };
 
     if (validateForm(this.state.errors)) {
-      register(newUser).then(res => {
-        if (res == "Created") {
-          const user = {
-            email: newUser.email,
-            password: newUser.password
-          };
-          login(user).then(res => {
-            this.props.history.push(`/profile`);
-          });
-        }
-        if (res == "Username Taken") {
-          this.setState({ user_taken: 1 });
-          this.setState({ invalid: 1 });
-        }
-        if (res == "Email Taken") {
-          this.setState({ email_taken: 1 });
-          this.setState({ invalid: 1 });
-        }
-      });
+      if (!this.state.pressed_new_post) {
+        register(newUser).then(res => {
+          if (res == "Created") {
+            const user = {
+              email: newUser.email,
+              password: newUser.password
+            };
+            login(user).then(res => {
+              this.props.history.push(`/profile`);
+            });
+          }
+          if (res == "Username Taken") {
+            this.setState({ user_taken: 1 });
+            this.setState({ invalid: 1 });
+          }
+          if (res == "Email Taken") {
+            this.setState({ email_taken: 1 });
+            this.setState({ invalid: 1 });
+          }
+        });
+      } else {
+        const newPost = {
+          title: this.postRf.state.data.title,
+          content: this.postRf.state.data.content,
+          start_date: processDate(this.postRf.state.data.date[0]),
+          end_date: processDate(this.postRf.state.data.date[1]),
+          country: this.postRf.state.data.country,
+          city: this.postRf.state.data.city,
+          latitude: this.postRf.state.data.lat,
+          longitude: this.postRf.state.data.lon
+        };
+        registerAndPost(newUser, newPost).then(res => {
+          if (res == "Created") {
+            const user = {
+              email: newUser.email,
+              password: newUser.password
+            };
+            login(user).then(res => {
+              this.props.history.push(`/profile`);
+            });
+          }
+          if (res == "Username Taken") {
+            this.setState({ user_taken: 1 });
+            this.setState({ invalid: 1 });
+          }
+          if (res == "Email Taken") {
+            this.setState({ email_taken: 1 });
+            this.setState({ invalid: 1 });
+          }
+          if (res == "Post Create Failed") {
+            this.setState({ invalid: 1 });
+          }
+        });
+      }
     } else {
       this.setState({ invalid: 1 });
     }
-
-    console.log(this.postRf.state);
   }
 
   handle_new_post_press = () => {
@@ -187,7 +259,7 @@ class Register extends Component {
           {this.state.errors.username.length > 0 && (
             <span className="error">{this.state.errors.username}</span>
           )}
-          {this.state.data.user_taken > 0 && (
+          {this.state.user_taken > 0 && (
             <span className="error">This username is taken</span>
           )}
         </div>
@@ -274,7 +346,7 @@ class Register extends Component {
           {this.state.errors.email.length > 0 && (
             <span className="error">{this.state.errors.email}</span>
           )}
-          {this.state.data.email_taken > 0 && (
+          {this.state.email_taken > 0 && (
             <span className="error">This email is taken</span>
           )}
         </div>
@@ -320,7 +392,7 @@ class Register extends Component {
             )}
           </div>
 
-          {this.state.data.invalid > 0 && (
+          {this.state.invalid > 0 && (
             <Alert color="danger">
               Your registration is invalid. Please try again!
             </Alert>

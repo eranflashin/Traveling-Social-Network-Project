@@ -6,6 +6,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import DateRangePicker from "@wojtekmaj/react-daterange-picker";
 import MyMap from "./GeoSearchComponent";
+import Alert from "reactstrap/es/Alert";
 
 export default class PostForm extends Component {
   constructor(props) {
@@ -21,6 +22,11 @@ export default class PostForm extends Component {
         lon: null,
         lat: null
       },
+      dates_not_valid: 0,
+      post_title_not_valid: 1,
+      post_content_not_valid: 0,
+      location_not_chosen: 1,
+      invalid: 0,
       errors: {
         dates: "",
         postTitle: "",
@@ -30,6 +36,18 @@ export default class PostForm extends Component {
   }
 
   handleClose = () => {
+    if (
+      this.state.dates_not_valid > 0 ||
+      this.state.post_title_not_valid > 0 ||
+      this.state.post_content_not_valid > 0 ||
+      this.state.location_not_chosen > 0
+    ) {
+      this.setState({ invalid: 1 });
+      return;
+    } else {
+      this.setState({ invalid: 0 });
+    }
+
     this.setState({ show: false });
   };
   handleShow = () => {
@@ -42,10 +60,15 @@ export default class PostForm extends Component {
       data: { ...this.state.data, date: date }
     });
     if (date != null) {
-      errors.dates =
-        date[1] < date[0] ? "Start date must be earlier than end date" : "";
+      if (date[1] < date[0]) {
+        errors.dates = "Start date must be earlier than end date";
+        this.setState({ dates_not_valid: 1 });
+      } else {
+        this.setState({ dates_not_valid: 0 });
+      }
     } else {
       errors.dates = "";
+      this.setState({ dates_not_valid: 1 });
     }
   };
 
@@ -60,18 +83,23 @@ export default class PostForm extends Component {
       case "title":
         if (value.length < 1) {
           errors.postTitle = "Title must contain at least one character";
+          this.setState({ post_title_not_valid: 1 });
         } else if (value.length > 20) {
           errors.postTitle = "Title must contain at most 20 characters";
+          this.setState({ post_title_not_valid: 1 });
         } else {
-          errors.postTitle = `${value.length}/20`;
+          errors.postTitle = "";
+          this.setState({ post_title_not_valid: 0 });
         }
         break;
 
       case "content":
         if (value.length > 500) {
           errors.postContent = "Post must contain at most 500 characters";
+          this.setState({ post_content_not_valid: 1 });
         } else {
-          errors.postContent = `${value.length}/500`;
+          errors.postContent = "";
+          this.setState({ post_title_not_valid: 0 });
         }
         break;
     }
@@ -79,6 +107,7 @@ export default class PostForm extends Component {
 
   handleMapResult(geo_json) {
     this.setState({ data: { ...this.state.data, ...geo_json } });
+    this.setState({ location_not_chosen: 0 });
   }
 
   render() {
@@ -160,6 +189,12 @@ export default class PostForm extends Component {
             </form>
           </Modal.Body>
           <Modal.Footer>
+            {this.state.invalid > 0 && (
+              <Alert color="danger">
+                Something is wrong with your post. Also Make sure to choose a
+                location, and fill correct dates
+              </Alert>
+            )}
             <Button variant="primary" onClick={this.handleClose}>
               I'm done...
             </Button>
