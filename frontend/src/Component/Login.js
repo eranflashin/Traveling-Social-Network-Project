@@ -105,7 +105,7 @@ export default class Login extends Component {
       login(user)
         .then(res => {
           if (res !== "loginError") {
-            this.props.history.push(`/profile`);
+            this.props.history.push(`/postfeed`);
           } else {
             this.setState({ invalid: 1 });
           }

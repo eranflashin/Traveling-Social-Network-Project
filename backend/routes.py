@@ -14,7 +14,7 @@ def get_auth_token():
     return jsonify({'token': token.decode('ascii')}), 200
 
 
-@app.route('/api/users/<int:user_id>', methods=['GET'])
+@app.route('/api/user_by_id/<int:user_id>', methods=['GET'])
 @auth.login_required
 def get_user(user_id):
     user = models.User.query.get(user_id)
@@ -23,7 +23,7 @@ def get_user(user_id):
     return user.to_json(), 201
 
 
-@app.route("/api/users/<string:name>", methods=['GET'])
+@app.route("/api/user_by_name/<string:name>", methods=['GET'])
 @auth.login_required
 def get_user_id(name):
     user = models.User.query.filter_by(username=name).first()
@@ -125,6 +125,16 @@ def get_post(post_id):
 def get_all_posts(user_id):
     user = models.User.query.get(user_id)
     return user.get_posts(), 200
+
+@app.route("/api/posts/get_all_and_of_followed", methods=['GET'])
+@auth.login_required
+def get_posts_of_self_and_followed():
+    followeds = current_user.get_followed()
+    result = current_user.get_posts()
+    for followed in followeds:
+        result.update(followed.get_posts())
+    
+    return result
 
 
 @app.route("/api/posts/new", methods=['POST'])

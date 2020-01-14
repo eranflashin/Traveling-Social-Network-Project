@@ -185,7 +185,7 @@ class Register extends Component {
               password: newUser.password
             };
             login(user).then(res => {
-              this.props.history.push(`/profile`);
+              this.props.history.push(`/postfeed`);
             });
           }
           if (res == "Username Taken") {
@@ -215,7 +215,7 @@ class Register extends Component {
               password: newUser.password
             };
             login(user).then(res => {
-              this.props.history.push(`/profile`);
+              this.props.history.push(`/postfeed`);
             });
           }
           if (res == "Username Taken") {

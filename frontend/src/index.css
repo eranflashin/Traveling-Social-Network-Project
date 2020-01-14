@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css?family=Raleway:300,400");
+
 .landingImgContainer {
   max-width: 30vw;
   max-height: 100%;
@@ -85,7 +87,7 @@ body {
   background-size: cover;
   background-repeat: no-repeat;
   min-height: 100vh;
-  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-family: "Raleway", sans-serif;
 }
 
 body,
@@ -249,7 +251,7 @@ html {
   width: 180px;
   height: 30px;
   border-radius: 16px;
-  background: #34ca92;
+  background: midnightblue;
   color: #fbfffd;
   overflow: hidden;
 
@@ -259,8 +261,8 @@ html {
 .logout-button:hover,
 .logout-button:active {
   text-decoration: none;
-  color: #0c5;
-  border-color: #0c5;
+  color: #c8d1f0;
+  border-color: #c8d1f0;
   background: transparent;
 }
 
@@ -300,7 +302,7 @@ html {
 .logout-button:active span:after {
   transition: opacity 0.5s, top 0.5s, right 0.5s;
   opacity: 1;
-  border-color: #0c5;
+  border-color: #c8d1f0;
   right: 0;
   top: 50%;
 }
@@ -362,4 +364,52 @@ textarea.postContents {
 .react-calendar,
 .react-calendar--selectRange {
   max-width: 80% !important;
+}
+
+.CarouselContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+}
+
+.postControlButton {
+  display: inline-flex;
+  height: 40px;
+  width: 150px;
+  border: 2px solid midnightblue;
+  border-radius: 20px;
+  margin: 20px 20px 20px 20px;
+  color: midnightblue;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-size: 0.8em;
+  letter-spacing: 1.5px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: transparent;
+}
+
+.postControlButton {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.postControlButton-translate {
+  transform: rotate(50deg);
+  width: 100%;
+  height: 250%;
+  left: -200px;
+  top: -30px;
+  background: rgba(53, 53, 224, 0.25);
+  position: absolute;
+  transition: all 0.3s ease-Out;
+}
+
+.postControlButton:hover .postControlButton-translate {
+  left: 0;
 }

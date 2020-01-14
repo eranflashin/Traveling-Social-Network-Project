@@ -105,6 +105,7 @@ class Post(db.Model):
             'title': self.title,
             'owner': {
                 'id': self.user_id,
+                'username': self.owner.username,
                 'url': url_for('get_user', user_id=self.user_id, _external=True)
             },
             'last_edit_time': self.timestamp,
@@ -131,7 +132,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     first_name = db.Column(db.String(20), nullable=False)
-    gender = db.Column(db.String(10),nullable=False)
+    gender = db.Column(db.String(10), nullable=False)
     last_name = db.Column(db.String(20), nullable=False)
     birth_date = db.Column(db.Date())
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -248,17 +249,14 @@ class User(db.Model, UserMixin):
         return self.followed.count()
 
     def get_followers(self):
-        followers = self.followers.all()
-        return {follower.id: follower.to_json() for follower in followers}
+        return [folRel.follower for folRel in self.followers]
 
     def get_followed(self):
-        followeds = self.followed.all()
-        return {followed.id: followed.to_json() for followed in followeds}
+        return [folRel.followed for folRel in self.followed]
 
     def get_posts(self):
         posts = self.posts.all()
         return {post.id: post.to_json() for post in posts}
-
 
     def to_json(self):
 
