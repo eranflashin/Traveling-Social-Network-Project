@@ -14,14 +14,19 @@ class Navbar extends Component {
         current_user: 0,
         username: '',
         notifications: [],
+        notifs_num: -2,
         suggestions: []
     };
 
     get_user() {
         axios.defaults.withCredentials = true;
-        axios.get('http://127.0.0.1:5000/user/' + this.state.username).then((response) => {
+        axios.get('http://127.0.0.1:5000/api/user_by_name/' + this.state.username, {
+                headers: {
+                    Authorization: "Basic " + btoa(localStorage.usertoken + ":")
+                }
+            }).then((response) => {
             this.setState({username: ''});
-            this.props.history.push(`/users/` + response.data.id)
+            this.props.history.push(`/profile/` + response.data.id)
         }).catch(err => {
             this.setState({username: ''});
             alert('no user with this name');
@@ -34,10 +39,10 @@ class Navbar extends Component {
         this.setState({username: e.target.value});
         axios.defaults.withCredentials = true;
         axios.get('http://127.0.0.1:5000/api/usersearch/' + e.target.value, {
-        headers: {
-          Authorization: "Basic " + btoa(localStorage.usertoken + ":")
-        }
-      }).then((response) => {
+            headers: {
+                Authorization: "Basic " + btoa(localStorage.usertoken + ":")
+            }
+        }).then((response) => {
             this.setState({suggestions: response.data.suggestions});
         }).catch(err => {
             this.setState({suggestions: []});
@@ -63,30 +68,18 @@ class Navbar extends Component {
     }
 
     get_notifs() {
-        axios.get('http://127.0.0.1:5000/api/notafications/' + this.state.current_user, {
-        headers: {
-          Authorization: "Basic " + btoa(localStorage.usertoken + ":")
-        }
-      }).then((response) => {
-            if(response.data.notifications)
+        axios.get('http://127.0.0.1:5000/api/newnotafications/' + this.state.current_user, {
+            headers: {
+                Authorization: "Basic " + btoa(localStorage.usertoken + ":")
+            }
+        }).then((response) => {
+            if (response.data.notifications)
                 this.setState({notifications: response.data.notifications});
             else
                 this.setState({notifications: [{'name': 'empty', 'data': 'no notifs'}]});
         }).catch(err => {
-            this.setState({notifications: [{'name': 'empty', 'data': 'no notifs'}]});
-
+            this.setState({notifications: [{'name': 'error', 'data': 'dont know'}]});
         });
-
-        // let xxx = {
-        //     is_read: false,
-        //     name: 'sahar',
-        //     data: 'alalalala'
-        // };
-        // let curr_ll = this.state.notifications;
-        // curr_ll.push(xxx);
-        // this.setState({
-        //     notifications: curr_ll
-        // });
     }
 
     componentDidUpdate(prevProps) {
@@ -99,6 +92,15 @@ class Navbar extends Component {
         const token = localStorage.usertoken;
         if (token) {
             const decoded = jwt_decode(token);
+            axios.get('http://127.0.0.1:5000/api/newnotafications_num/' + decoded.id, {
+                headers: {
+                    Authorization: "Basic " + btoa(localStorage.usertoken + ":")
+                }
+            }).then((response) => {
+                this.setState({notifs_num: response.data.num});
+            }).catch(err => {
+                this.setState({notifs_num: -1});
+            });
             this.setState({
                 current_user: decoded.id
             });
@@ -138,7 +140,7 @@ class Navbar extends Component {
                             </li>
 
                             <li className="nav-item">
-                                <Link to={"/users/" + this.state.current_user} className="nav-link">
+                                <Link to={"/profile/" + this.state.current_user} className="nav-link">
                                     User
                                 </Link>
                             </li>
@@ -152,7 +154,7 @@ class Navbar extends Component {
                                     {suggestions_arr}
                                 </datalist>
 
-                                <Button variant="outline-secondary">
+                                <Button type="submit" variant="outline-secondary">
                                     Search
                                 </Button>
                             </Form>
@@ -165,8 +167,12 @@ class Navbar extends Component {
 
                             <li className="nav-item">
                                 <Popup
-                                    trigger={<Button variant="outline-secondary"
-                                                     color="primary"> Notifications </Button>}
+                                    trigger={
+                                        <Button type="button" className="btn btn-secondary  ">
+                                            Notifications
+                                            <span className="badge badge-pill badge-light">
+                                            {this.state.notifs_num} </span>
+                                        </Button>}
                                     position="bottom center"
                                     closeOnDocumentClick
                                     onOpen={this.get_notifs.bind(this)}
