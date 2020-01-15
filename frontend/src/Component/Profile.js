@@ -2,10 +2,11 @@ import React, { Component } from "react";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
 
-export class UserProfile extends Component {
+export default class UserProfile extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      curr_user_id: 0,
       id: 0,
       username: "",
       first_name: "",
@@ -20,18 +21,23 @@ export class UserProfile extends Component {
     const token = localStorage.usertoken;
     const decoded = jwt_decode(token);
     this.setState({
-      id: decoded.id
+      curr_user_id: decoded.id
     });
+
+    let user_id = this.props.match.params.user_id;
+    if (user_id == "") user_id = decoded.id;
 
     axios.defaults.withCredentials = true;
     axios
-      .get("http://127.0.0.1:5000/api/users/" + decoded.id, {
+      .get("http://127.0.0.1:5000/api/user_by_id/" + user_id, {
         headers: {
           Authorization: "Basic " + btoa(localStorage.usertoken + ":")
         }
       })
       .then(response => {
+        console.log(response.data);
         this.setState({
+          id: user_id,
           username: response.data.names.username,
           first_name: response.data.names.first_name,
           last_name: response.data.names.last_name,
@@ -51,11 +57,9 @@ export class UserProfile extends Component {
     }
   }
 
-
   render() {
     return (
       <>
-
         <div className="profile-block">
           <img
             className="profile-img"
@@ -63,11 +67,11 @@ export class UserProfile extends Component {
             alt="profile image"
           />
           <h1 className="text-heading">{this.state.username}</h1>
-          <div className="text-secondary">
+          <div className="text-light">
             {this.state.first_name + " " + this.state.last_name}
           </div>
-          <div className="text-secondary">{this.state.birth_date}</div>
-          <div className="text-secondary">{this.state.email}</div>
+          <div className="text-light">{this.state.birth_date}</div>
+          <div className="text-light">{this.state.email}</div>
         </div>
       </>
     );

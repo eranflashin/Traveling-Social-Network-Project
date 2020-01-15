@@ -413,3 +413,7 @@ textarea.postContents {
 .postControlButton:hover .postControlButton-translate {
   left: 0;
 }
+
+input[name="browser"] {
+  margin-right: 10px;
+}

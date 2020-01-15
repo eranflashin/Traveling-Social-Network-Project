@@ -101,7 +101,7 @@ def get_similar_usernames(val):
     abort(404, message="no users")
 
 
-@app.route("/api/notafications/<int:user_id>", methods=['GET'])
+@app.route("/api/newnotafications/<int:user_id>", methods=['GET'])
 @auth.login_required
 def get_new_notifs(user_id):
     user = models.User.query.get(user_id)
@@ -109,6 +109,26 @@ def get_new_notifs(user_id):
         abort(404)
     notifs = user.get_new_notifications()
     return notifs, 201
+
+
+@app.route("/api/allnotafications/<int:user_id>", methods=['GET'])
+@auth.login_required
+def get_all_notifs(user_id):
+    user = models.User.query.get(user_id)
+    if not user:
+        abort(404)
+    notifs = user.get_new_notifications()
+    return notifs, 201#TODO change to all notifs
+
+
+@app.route("/api/newnotafications_num/<int:user_id>", methods=['GET'])
+@auth.login_required
+def get_new_notifs_num(user_id):
+    user = models.User.query.get(user_id)
+    if not user:
+        abort(404)
+    num = user.num_of_new_notifications()
+    return jsonify({'num': num}), 201
 
 
 @app.route('/api/posts/get/<int:post_id>', methods=['GET'])

@@ -272,8 +272,8 @@ class User(db.Model, UserMixin):
             'last_seen': self.last_seen,
             'image_file': url_for('static', filename='profile_pics/' + self.image_file),
             'posts': url_for('get_all_posts', user_id=self.id, _external=True),
-            'followers': self.get_followers(),
-            'followed': self.get_followed()
+            'followers': url_for('get_followers', user_id=self.id, _external=True),
+            'followed': url_for('get_followed', user_id=self.id, _external=True),
         }
 
         if self.birth_date is not None:
