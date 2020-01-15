@@ -35,7 +35,6 @@ export default class UserProfile extends Component {
         }
       })
       .then(response => {
-        console.log(response.data);
         this.setState({
           id: user_id,
           username: response.data.names.username,

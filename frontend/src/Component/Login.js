@@ -19,7 +19,6 @@ export const login = user => {
     })
     .catch(err => {
       if (err.response && err.response.status === 404) {
-        debugger;
         axios.defaults.withCredentials = true;
         return axios({
           url: "http://127.0.0.1:5000/api/token",

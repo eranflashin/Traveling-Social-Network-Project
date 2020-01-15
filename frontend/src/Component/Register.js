@@ -5,18 +5,7 @@ import Alert from "reactstrap/es/Alert";
 import axios from "axios";
 import { login } from "./Login";
 import PostForm from "./PostForm";
-
-const processDate = date => {
-  let processed_date = new Date(date);
-  processed_date =
-    processed_date.getFullYear() +
-    "-" +
-    (processed_date.getMonth() + 1) +
-    "-" +
-    processed_date.getDate();
-
-  return processed_date;
-};
+import { processDate } from "./PostForm";
 
 export const register = newUser => {
   return axios

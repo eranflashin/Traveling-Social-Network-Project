@@ -10,7 +10,32 @@ import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
 import { MdDateRange, MdPlace } from "react-icons/md";
+import { FaPlus } from "react-icons/fa";
 import PostForm from "./PostForm";
+import { processDate } from "./PostForm";
+
+const addNewPost = post => {
+  axios.defaults.withCredentials = true;
+  debugger;
+  return axios.post(
+    "http://127.0.0.1:5000/api/posts/new",
+    {
+      title: post.title,
+      content: post.content,
+      start_date: processDate(post.date[0]),
+      end_date: processDate(post.date[1]),
+      country: post.country,
+      city: post.city,
+      latitude: post.lat,
+      longitude: post.lon
+    },
+    {
+      headers: {
+        Authorization: "Basic " + btoa(localStorage.usertoken + ":")
+      }
+    }
+  );
+};
 
 const bringUsersPosts = () => {
   axios.defaults.withCredentials = true;
@@ -33,33 +58,106 @@ const bringUsersPosts = () => {
     });
 };
 
+const updatePost = (new_post, post_id) => {
+  axios.defaults.withCredentials = true;
+  return axios
+    .put(
+      "http://127.0.0.1:5000/api/posts/update/" + post_id,
+      {
+        title: new_post.title,
+        content: new_post.content,
+        country: new_post.country,
+        city: new_post.city,
+        latitude: new_post.lat,
+        longitude: new_post.lon,
+        start_date: processDate(new_post.date[0]),
+        end_date: processDate(new_post.date[1])
+      },
+      {
+        headers: {
+          Authorization: "Basic " + btoa(localStorage.usertoken + ":")
+        }
+      }
+    )
+    .catch(err => {
+      return "invalid action";
+    });
+};
+
+const deletePost = post_id => {
+  axios.defaults.withCredentials = true;
+  return axios
+    .delete("http://127.0.0.1:5000/api/posts/delete/" + post_id, {
+      headers: {
+        Authorization: "Basic " + btoa(localStorage.usertoken + ":")
+      }
+    })
+    .catch(err => {
+      return "invalid action";
+    });
+};
+
 export default class PostFeed extends Component {
   constructor(props) {
     super(props);
     this.state = {
       posts_array: [],
       invalid_action: 0,
-      self_id: jwt_decode(localStorage.usertoken).id
+      self_id: jwt_decode(localStorage.usertoken).id,
+      is_loading: true
     };
 
     this.onClickUsername = this.onClickUsername.bind(this);
     this.onClickDelete = this.onClickDelete.bind(this);
-    this.onClickEdit = this.onClickEdit.bind(this);
+    this.onClickEditStart = this.onClickEditStart.bind(this);
+    this.onClickEditEnd = this.onClickEditEnd.bind(this);
     this.onClickSubs = this.onClickSubs.bind(this);
+    this.onClickNewPostStart = this.onClickNewPostStart.bind(this);
+    this.onClickNewPostEnd = this.onClickNewPostEnd.bind(this);
   }
 
   postsRefsMap = new Map();
+
+  onClickNewPostStart = () => {
+    this.newPostFormRef.handleShow();
+  };
+
+  onClickNewPostEnd = post => {
+    addNewPost(post).then(res => {
+      if (res === "invalid action") {
+        this.setState({ invalid_action: 1 });
+      } else {
+        this.componentDidMount();
+      }
+    });
+  };
 
   onClickUsername = user_id => {
     this.props.history.push(`/profile/${user_id}`);
   };
 
   onClickDelete = post_id => {
-    console.log(post_id);
+    deletePost(post_id).then(res => {
+      if (res === "invalid action") {
+        this.setState({ invalid_action: 1 });
+      } else {
+        this.componentDidMount();
+      }
+    });
   };
 
-  onClickEdit = post => {
+  onClickEditStart = post => {
     this.postsRefsMap.get(post.key).handleShow();
+  };
+
+  onClickEditEnd = (new_post, post_id) => {
+    updatePost(new_post, post_id).then(res => {
+      if (res === "invalid action") {
+        this.setState({ invalid_action: 1 });
+      } else {
+        this.componentDidMount();
+      }
+    });
   };
 
   onClickSubs = post_id => {
@@ -75,14 +173,46 @@ export default class PostFeed extends Component {
       if (res === "invalid action") {
         this.setState({ invalid_action: 1 });
       } else {
-        this.setState({ posts_array: res });
+        this.setState({ posts_array: res, is_loading: false });
       }
     });
   }
 
   render() {
+    const newPostComp = (
+      <div>
+        <PostForm
+          update_mode={false}
+          onEditEnd={this.onClickNewPostEnd}
+          callback_mode={true}
+          ref={ref => (this.newPostFormRef = ref)}
+        />
+        <button
+          type="button"
+          className="btn btn-success btn-circle btn-lg addNewPostButtonFeed"
+          onClick={this.onClickNewPostStart}
+        >
+          <FaPlus />
+        </button>
+      </div>
+    );
     return this.state.invalid_action ? (
       <Alert color="danger">Sorry but this action is forbidden!</Alert>
+    ) : this.state.posts_array.length == 0 ? (
+      this.state.is_loading ? (
+        <></>
+      ) : (
+        <div>
+          <div className="CarouselContainer">
+            <Container>
+              <Row>
+                <big className="noPostsText">No Posts To Show</big>
+              </Row>
+            </Container>
+          </div>
+          {newPostComp}
+        </div>
+      )
     ) : (
       <>
         <div className="CarouselContainer">
@@ -91,9 +221,10 @@ export default class PostFeed extends Component {
               return (
                 <Carousel.Item key={post.key}>
                   <PostForm
-                    post={post.data}
+                    post={post}
                     update_mode={true}
                     ref={ref => this.setPostFormRef(post.key, ref)}
+                    onEditEnd={this.onClickEditEnd}
                   />
                   <Card
                     style={{
@@ -132,14 +263,14 @@ export default class PostFeed extends Component {
                         <Row>
                           <MdDateRange />
                           <small>
-                            {post.data.dates.start_date} -
+                            {post.data.dates.start_date} - <span>&nbsp;</span>
                             {post.data.dates.end_date}
                           </small>
                         </Row>
                         <Row>
                           <MdPlace />
                           <small>
-                            {post.data.location.country},
+                            {post.data.location.country}, <span>&nbsp;</span>
                             {post.data.location.city}
                           </small>
                         </Row>
@@ -162,7 +293,7 @@ export default class PostFeed extends Component {
                             {this.state.self_id === post.data.owner.id ? (
                               <div
                                 className="postControlButton"
-                                onClick={() => this.onClickEdit(post)}
+                                onClick={() => this.onClickEditStart(post)}
                               >
                                 <div className="postControlButton-translate"></div>
                                 Edit
@@ -193,6 +324,7 @@ export default class PostFeed extends Component {
             })}
           </Carousel>
         </div>
+        {newPostComp}
       </>
     );
   }

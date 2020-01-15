@@ -41,29 +41,28 @@ def register_user():
     return jsonify({'message': 'Created', 'username': user.username}), 201, {
         'Location': url_for('get_user', user_id=user.id,
                             _external=True)}
-                    
+
 
 @app.route('/registerAndPost', methods=['POST'])
 def register_and_post():
     data = request.get_json()
     try:
         user = utils.make_new_user_or_abort(data['user'])
-    
+
         db.session.add(user)
         db.session.flush()
-        post = utils.make_new_post_or_abort(data['post'],user)
+        post = utils.make_new_post_or_abort(data['post'], user)
 
         db.session.add(post)
     except Exception as e:
         db.session.rollback()
         raise e
-    
+
     db.session.commit()
-    
+
     return jsonify({'message': 'Created', 'username': user.username, 'post_id': post.id}), 201, {
         'Location': url_for('get_user', user_id=user.id,
                             _external=True)}
-
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -94,7 +93,8 @@ def logout():
 @app.route("/api/usersearch/<string:val>", methods=['GET'])
 @auth.login_required
 def get_similar_usernames(val):
-    users = models.User.query.filter(models.User.username.like('%'+val+'%')).limit(10)
+    users = models.User.query.filter(
+        models.User.username.like('%' + val + '%')).limit(10)
     if users:
         usernames = [user.username for user in users]
         return jsonify({'suggestions': usernames}), 201
@@ -118,7 +118,7 @@ def get_all_notifs(user_id):
     if not user:
         abort(404)
     notifs = user.get_new_notifications()
-    return notifs, 201#TODO change to all notifs
+    return notifs, 201  # TODO change to all notifs
 
 
 @app.route("/api/newnotafications_num/<int:user_id>", methods=['GET'])
@@ -146,6 +146,7 @@ def get_all_posts(user_id):
     user = models.User.query.get(user_id)
     return user.get_posts(), 200
 
+
 @app.route("/api/posts/get_all_and_of_followed", methods=['GET'])
 @auth.login_required
 def get_posts_of_self_and_followed():
@@ -153,7 +154,7 @@ def get_posts_of_self_and_followed():
     result = current_user.get_posts()
     for followed in followeds:
         result.update(followed.get_posts())
-    
+
     return result
 
 
@@ -170,7 +171,7 @@ def add_post():
 
 @app.route("/api/posts/update/<int:post_id>", methods=['PUT'])
 @auth.login_required
-@permissions.same_as_or_follows
+@permissions.same_as
 def update_post(post_id):
     data = request.get_json()
 
@@ -179,7 +180,7 @@ def update_post(post_id):
             'latitude' not in data or 'longitude' not in data or 'content' not in data:
         abort(400, message="bad_json")
 
-    if not utils.is_date_valid(data['start_date']) or not utils.is_date_valid(data['end_date']) or not utils.dates_are_ordered(date['start_date'],date['end_date']):
+    if not utils.is_date_valid(data['start_date']) or not utils.is_date_valid(data['end_date']) or not utils.dates_are_ordered(data['start_date'], data['end_date']):
         abort(400, message="Bad Dates")
 
     old_post = models.Post.query.get(post_id)
@@ -201,6 +202,21 @@ def update_post(post_id):
             'Location': url_for('get_post', post_id=old_post.id, _external=True)}
     else:
         add_post()
+
+
+@app.route("/api/posts/delete/<int:post_id>", methods=['DELETE'])
+@auth.login_required
+@permissions.same_as
+def delete_post(post_id):
+    post = models.Post.query.get(post_id)
+
+    if not post:
+        abort(404)
+
+    db.session.delete(post)
+    db.session.commit()
+
+    return jsonify({"message": "success"}), 204
 
 
 @app.route('/api/followers/get_all/<int:user_id>', methods=['GET'])

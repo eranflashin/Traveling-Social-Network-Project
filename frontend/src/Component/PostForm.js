@@ -8,11 +8,24 @@ import DateRangePicker from "@wojtekmaj/react-daterange-picker";
 import MyMap from "./GeoSearchComponent";
 import Alert from "reactstrap/es/Alert";
 
+export const processDate = date => {
+  let processed_date = new Date(date);
+  processed_date =
+    processed_date.getFullYear() +
+    "-" +
+    (processed_date.getMonth() + 1) +
+    "-" +
+    processed_date.getDate();
+
+  return processed_date;
+};
+
 export default class PostForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
       update_mode: this.props.update_mode,
+      callback_mode: this.props.callback_mode,
       show: false,
       data: {
         title: "",
@@ -50,25 +63,37 @@ export default class PostForm extends Component {
     }
 
     this.setState({ show: false });
+    if (this.state.update_mode) {
+      this.props.onEditEnd(this.state.data, this.props.post.key);
+    }
+    if (this.state.callback_mode) {
+      this.props.onEditEnd(this.state.data);
+    }
   };
 
   handleShow = () => {
-    const post = this.props.post;
-    console.log(post);
-    this.setState({
-      data: {
-        title: post.title,
-        content: post.content,
-        date: [new Date(post.dates.start_date), new Date(post.dates.end_date)],
-        lon: post.location.waypoint.longitude,
-        lat: post.location.waypoint.latitude
-      },
-      dates_not_valid: 0,
-      post_title_not_valid: 0,
-      post_content_not_valid: 0,
-      location_not_chosen: 0,
-      invalid: 0
-    });
+    if (this.state.update_mode) {
+      const post = this.props.post;
+      this.setState({
+        data: {
+          title: post.data.title,
+          content: post.data.content,
+          date: [
+            new Date(post.data.dates.start_date),
+            new Date(post.data.dates.end_date)
+          ],
+          lon: post.data.location.waypoint.longitude,
+          lat: post.data.location.waypoint.latitude,
+          country: post.data.location.country,
+          city: post.data.location.city
+        },
+        dates_not_valid: 0,
+        post_title_not_valid: 0,
+        post_content_not_valid: 0,
+        location_not_chosen: 0,
+        invalid: 0
+      });
+    }
     this.setState({ show: true });
   };
 

@@ -29,13 +29,26 @@ def same_as_or_follows(f):
     return decorated_function
 
 
-#
-# def is_not_anonymous():
-#     def decorator(f):
-#         @wraps(f)
-#         def decorated_function(*args, **kwargs):
-#             if current_user.is_anonymous():
-#                 abort(403)
-#             return f(*args, **kwargs)
-#         return decorated_function
-#     return decorator
+def same_as(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' in kwargs:
+            user = models.User.query.get(kwargs['user_id'])
+            if user is None:
+                abort(404)
+            if kwargs['user_id'] == current_user.id:
+                return f(*args, **kwargs)
+            else:
+                abort(403)
+
+        if 'post_id' in kwargs:
+            post = models.Post.query.get(kwargs['post_id'])
+            if post is not None:
+                owner = post.owner
+                if owner.id == current_user.id:
+                    return f(*args, **kwargs)
+                else:
+                    abort(403)
+            else:
+                return f(*args, **kwargs)
+    return decorated_function

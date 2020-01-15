@@ -195,7 +195,7 @@ class Navbar extends Component {
                 <Popup
                   trigger={
                     <Button type="button" className="btn btn-secondary  ">
-                      Notifications
+                      Notifications &nbsp;&nbsp;
                       <span className="badge badge-pill badge-light">
                         {this.state.notifs_num}{" "}
                       </span>

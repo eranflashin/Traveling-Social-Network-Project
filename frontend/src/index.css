@@ -251,7 +251,7 @@ html {
   width: 180px;
   height: 30px;
   border-radius: 16px;
-  background: midnightblue;
+  background: transparent;
   color: #fbfffd;
   overflow: hidden;
 
@@ -261,7 +261,7 @@ html {
 .logout-button:hover,
 .logout-button:active {
   text-decoration: none;
-  color: #c8d1f0;
+  color: rgb(62, 62, 243);
   border-color: #c8d1f0;
   background: transparent;
 }
@@ -302,7 +302,7 @@ html {
 .logout-button:active span:after {
   transition: opacity 0.5s, top 0.5s, right 0.5s;
   opacity: 1;
-  border-color: #c8d1f0;
+  border-color: rgb(62, 62, 243);
   right: 0;
   top: 50%;
 }
@@ -416,4 +416,20 @@ textarea.postContents {
 
 input[name="browser"] {
   margin-right: 10px;
+}
+
+.noPostsText {
+  font-weight: 900;
+  font-size: xxx-large;
+  font-family: Raleway, Arial;
+  color: midnightblue;
+  text-shadow: 2px 4px 5px rgb(71, 71, 71);
+}
+
+.addNewPostButtonFeed {
+  position: absolute;
+  bottom: 10%;
+  right: 10%;
+  border-radius: 50% !important;
+  box-shadow: 0px 0px 7px 4px rgba(255, 255, 255, 0.397);
 }
