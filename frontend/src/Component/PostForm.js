@@ -12,6 +12,7 @@ export default class PostForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      update_mode: this.props.update_mode,
       show: false,
       data: {
         title: "",
@@ -50,7 +51,24 @@ export default class PostForm extends Component {
 
     this.setState({ show: false });
   };
+
   handleShow = () => {
+    const post = this.props.post;
+    console.log(post);
+    this.setState({
+      data: {
+        title: post.title,
+        content: post.content,
+        date: [new Date(post.dates.start_date), new Date(post.dates.end_date)],
+        lon: post.location.waypoint.longitude,
+        lat: post.location.waypoint.latitude
+      },
+      dates_not_valid: 0,
+      post_title_not_valid: 0,
+      post_content_not_valid: 0,
+      location_not_chosen: 0,
+      invalid: 0
+    });
     this.setState({ show: true });
   };
 
@@ -121,7 +139,11 @@ export default class PostForm extends Component {
           centered
         >
           <Modal.Header>
-            <h1 className="postHeader">Create Post</h1>
+            {this.state.update_mode ? (
+              <h1 className="postHeader">Edit Post</h1>
+            ) : (
+              <h1 className="postHeader">Create Post</h1>
+            )}
           </Modal.Header>
           <Modal.Body>
             <form noValidate onSubmit={this.onSubmit}>

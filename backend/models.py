@@ -136,7 +136,6 @@ class User(db.Model, UserMixin):
     last_name = db.Column(db.String(20), nullable=False)
     birth_date = db.Column(db.Date())
     email = db.Column(db.String(120), unique=True, nullable=False)
-    last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     hashed_password = db.Column(db.String(128), nullable=False)
     image_file = db.Column(db.String(120), nullable=False,
                            default='default.jpg')
@@ -269,7 +268,6 @@ class User(db.Model, UserMixin):
             },
             'gender': self.gender,
             'email': self.email,
-            'last_seen': self.last_seen,
             'image_file': url_for('static', filename='profile_pics/' + self.image_file),
             'posts': url_for('get_all_posts', user_id=self.id, _external=True),
             'followers': url_for('get_followers', user_id=self.id, _external=True),

@@ -370,7 +370,7 @@ class Register extends Component {
             <button>
               <span>Register!</span> <i className="fa" />
             </button>
-            <PostForm ref={ref => (this.postRf = ref)} />
+            <PostForm ref={ref => (this.postRf = ref)} update_mode={false} />
             {this.state.pressed_new_post ? (
               <button
                 type="button"

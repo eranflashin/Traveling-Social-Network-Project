@@ -27,23 +27,18 @@ def is_date_valid(date: str):
     except ValueError:
         return False
 
-def dates_are_ordered(date_1:str, date_2:str):
+
+def dates_are_ordered(date_1: str, date_2: str):
     date_1_obj = datetime.strptime(date_1, '%Y-%m-%d')
     date_2_obj = datetime.strptime(date_2, '%Y-%m-%d')
 
     return date_1_obj < date_2_obj
 
+
 @app.before_first_request
 def create_tables():
     db.create_all()
     db.session.commit()
-
-
-@app.before_request
-def before_request():
-    if current_user.is_authenticated:
-        current_user.last_seen = datetime.utcnow()
-        db.session.commit()
 
 
 @login_manager.user_loader
@@ -98,8 +93,8 @@ def make_new_user_or_abort(data):
         abort(400, message="Bad Json")
 
     if len(data['email']) > 120 or len(data['first_name']) > 20 or len(data['last_name']) > 20 or \
-            len(data['username']) > 20 or not is_email_valid(data['email']) or not is_date_valid(
-        data['birth_date']):
+        len(data['username']) > 20 or not is_email_valid(data['email']) or not is_date_valid(
+            data['birth_date']):
         abort(400, message="Bad Json")
 
     if models.User.query.filter_by(email=data['email']).first() is not None:
@@ -111,14 +106,16 @@ def make_new_user_or_abort(data):
     # noinspection PyArgumentList
     user = models.User(username=data['username'], first_name=data['first_name'],
                        last_name=data['last_name'], password=data['password'],
-                       email=data['email'], birth_date=datetime.strptime(data['birth_date'], '%Y-%m-%d'),
+                       email=data['email'], birth_date=datetime.strptime(
+                           data['birth_date'], '%Y-%m-%d'),
                        gender=data['gender'])
     if 'image_file' in data:
         user.image_file = data['image_file']
 
     return user
 
-def make_new_post_or_abort(data,user=None):
+
+def make_new_post_or_abort(data, user=None):
     if(user is None):
         user = current_user
 
@@ -129,11 +126,12 @@ def make_new_post_or_abort(data,user=None):
 
     if not is_date_valid(data['start_date']) or \
        not is_date_valid(data['end_date']) or \
-       not dates_are_ordered(data['start_date'],data['end_date']):
+       not dates_are_ordered(data['start_date'], data['end_date']):
         abort(400, message="Bad Dates")
 
     new_post = models.Post(title=data['title'], user_id=user.id,
-                           start_date=datetime.strptime(data['start_date'], '%Y-%m-%d'),
+                           start_date=datetime.strptime(
+                               data['start_date'], '%Y-%m-%d'),
                            end_date=datetime.strptime(data['end_date'], '%Y-%m-%d'), country=data['country'],
                            city=data['city'],
                            latitude=data['latitude'], longitude=data['longitude'], content=data['content'])

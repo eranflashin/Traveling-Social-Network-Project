@@ -18,10 +18,10 @@ export const login = user => {
       return response.data;
     })
     .catch(err => {
-      console.log(err);
       if (err.response && err.response.status === 404) {
+        debugger;
         axios.defaults.withCredentials = true;
-        axios({
+        return axios({
           url: "http://127.0.0.1:5000/api/token",
           method: "GET",
           mode: "cors",

@@ -48,6 +48,8 @@ export default class PostFeed extends Component {
     this.onClickSubs = this.onClickSubs.bind(this);
   }
 
+  postsRefsMap = new Map();
+
   onClickUsername = user_id => {
     this.props.history.push(`/profile/${user_id}`);
   };
@@ -56,12 +58,16 @@ export default class PostFeed extends Component {
     console.log(post_id);
   };
 
-  onClickEdit = post_id => {
-    this.postRf.setState({ show: true });
+  onClickEdit = post => {
+    this.postsRefsMap.get(post.key).handleShow();
   };
 
   onClickSubs = post_id => {
     console.log(post_id);
+  };
+
+  setPostFormRef = (post_id, ref) => {
+    this.postsRefsMap.set(post_id, ref);
   };
 
   componentDidMount() {
@@ -79,12 +85,16 @@ export default class PostFeed extends Component {
       <Alert color="danger">Sorry but this action is forbidden!</Alert>
     ) : (
       <>
-        <PostForm ref={ref => (this.postRf = ref)} />
         <div className="CarouselContainer">
           <Carousel indicators={false} interval={5000}>
             {this.state.posts_array.map(post => {
               return (
                 <Carousel.Item key={post.key}>
+                  <PostForm
+                    post={post.data}
+                    update_mode={true}
+                    ref={ref => this.setPostFormRef(post.key, ref)}
+                  />
                   <Card
                     style={{
                       backgroundColor: randomColor({
@@ -152,7 +162,7 @@ export default class PostFeed extends Component {
                             {this.state.self_id === post.data.owner.id ? (
                               <div
                                 className="postControlButton"
-                                onClick={() => this.onClickEdit(post.key)}
+                                onClick={() => this.onClickEdit(post)}
                               >
                                 <div className="postControlButton-translate"></div>
                                 Edit
