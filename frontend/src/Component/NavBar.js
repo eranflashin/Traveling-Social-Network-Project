@@ -143,11 +143,8 @@ class Navbar extends Component {
     return (
       <div>
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark fixed justify-content-end">
-          <div
-            className="collapse navbar-collapse justify-content-md-center col-md-12 "
-            id="navbarsExample10"
-          >
-            <ul className="navbar-nav nav-fill w-50">
+          <div className="collapse navbar-collapse justify-content-md-center col-md-13 ">
+            <ul className="navbar-nav nav-fill w-75">
               <li className="nav-item">
                 <Link to="/mapsearch" className="nav-link">
                   <FaMapMarkedAlt /> &nbsp; Map Search

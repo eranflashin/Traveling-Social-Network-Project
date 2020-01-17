@@ -98,7 +98,7 @@ def get_similar_usernames(val):
     if users:
         usernames = [user.username for user in users]
         return jsonify({'suggestions': usernames}), 201
-    abort(404, message="no users")
+    abort(404)
 
 
 @app.route("/api/newnotafications/<int:user_id>", methods=['GET'])

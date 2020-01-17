@@ -14,7 +14,7 @@ def same_as_or_follows(f):
             if kwargs['user_id'] == current_user.id or current_user.is_following(user):
                 return f(*args, **kwargs)
             else:
-                abort(403)
+                abort(403, message="")
 
         if 'post_id' in kwargs:
             post = models.Post.query.get(kwargs['post_id'])
@@ -23,7 +23,7 @@ def same_as_or_follows(f):
                 if owner.id == current_user.id or current_user.is_following(owner):
                     return f(*args, **kwargs)
                 else:
-                    abort(403)
+                    abort(403, message="")
             else:
                 return f(*args, **kwargs)
     return decorated_function
@@ -39,7 +39,7 @@ def same_as(f):
             if kwargs['user_id'] == current_user.id:
                 return f(*args, **kwargs)
             else:
-                abort(403)
+                abort(403, message="")
 
         if 'post_id' in kwargs:
             post = models.Post.query.get(kwargs['post_id'])
@@ -48,7 +48,7 @@ def same_as(f):
                 if owner.id == current_user.id:
                     return f(*args, **kwargs)
                 else:
-                    abort(403)
+                    abort(403, message="")
             else:
                 return f(*args, **kwargs)
     return decorated_function

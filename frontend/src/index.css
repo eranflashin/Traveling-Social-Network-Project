@@ -433,3 +433,17 @@ input[name="browser"] {
   border-radius: 50% !important;
   box-shadow: 0px 0px 7px 4px rgba(255, 255, 255, 0.397);
 }
+
+.mapSearchMapContainer {
+  height: 80vh;
+  width: 100%;
+  margin-top: 2%;
+  border-radius: 40px;
+  -moz-box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 5px;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 5px;
+  box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 5px;
+}
+
+.mapSearchMap {
+  height: 100%;
+}
