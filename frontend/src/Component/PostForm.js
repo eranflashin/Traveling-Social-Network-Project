@@ -93,6 +93,28 @@ export default class PostForm extends Component {
         location_not_chosen: 0,
         invalid: 0
       });
+    } else {
+      this.setState({
+        data: {
+          title: "",
+          content: "",
+          date: [new Date(), new Date()],
+          country: "",
+          city: "",
+          lon: null,
+          lat: null
+        },
+        dates_not_valid: 0,
+        post_title_not_valid: 1,
+        post_content_not_valid: 0,
+        location_not_chosen: 1,
+        invalid: 0,
+        errors: {
+          dates: "",
+          postTitle: "",
+          postContent: ""
+        }
+      });
     }
     this.setState({ show: true });
   };

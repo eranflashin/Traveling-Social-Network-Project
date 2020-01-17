@@ -32,7 +32,7 @@ def dates_are_ordered(date_1: str, date_2: str):
     date_1_obj = datetime.strptime(date_1, '%Y-%m-%d')
     date_2_obj = datetime.strptime(date_2, '%Y-%m-%d')
 
-    return date_1_obj < date_2_obj
+    return date_1_obj <= date_2_obj
 
 
 @app.before_first_request
