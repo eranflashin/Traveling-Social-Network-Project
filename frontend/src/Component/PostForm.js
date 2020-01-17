@@ -49,7 +49,7 @@ export default class PostForm extends Component {
     };
   }
 
-  handleClose = () => {
+  handleCloseValidate = () => {
     if (
       this.state.dates_not_valid > 0 ||
       this.state.post_title_not_valid > 0 ||
@@ -69,6 +69,10 @@ export default class PostForm extends Component {
     if (this.state.callback_mode) {
       this.props.onEditEnd(this.state.data);
     }
+  };
+
+  handleCloseNoValidate = () => {
+    this.setState({ show: false });
   };
 
   handleShow = () => {
@@ -126,7 +130,7 @@ export default class PostForm extends Component {
     });
     if (date != null) {
       if (date[1] < date[0]) {
-        errors.dates = "Start date must be earlier than end date";
+        errors.dates = "Start date must be earlier than end date or equal";
         this.setState({ dates_not_valid: 1 });
       } else {
         this.setState({ dates_not_valid: 0 });
@@ -180,7 +184,7 @@ export default class PostForm extends Component {
       <>
         <Modal
           show={this.state.show}
-          onHide={this.handleClose}
+          onHide={this.handleCloseValidate}
           size="lg"
           aria-labelledby="contained-modal-title-vcenter"
           centered
@@ -264,7 +268,10 @@ export default class PostForm extends Component {
                 location, and fill correct dates
               </Alert>
             )}
-            <Button variant="primary" onClick={this.handleClose}>
+            <Button variant="secondary" onClick={this.handleCloseNoValidate}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={this.handleCloseValidate}>
               I'm done...
             </Button>
           </Modal.Footer>
