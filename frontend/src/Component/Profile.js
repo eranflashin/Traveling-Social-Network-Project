@@ -89,7 +89,9 @@ export default class UserProfile extends Component {
             }
         ).then(response => {
             this.setState({is_following: false});
-        }).catch(err => {alert("no such users")});
+        }).catch(err => {
+            alert("no such users")
+        });
     }
 
     followUser() {
@@ -107,28 +109,34 @@ export default class UserProfile extends Component {
             }
         ).then(response => {
             this.setState({is_following: true});
-        }).catch(err => {alert("no such users")});
+        }).catch(err => {
+            alert("no such users")
+        });
     }
 
     render() {
+
+        const follow_button = (
+            <Button variant="primary" onClick={this.followUser.bind(this)}>
+                Follow
+            </Button>
+        );
+
+        const unfollow_button = (
+            <Button variant="primary" onClick={this.unfollowUser.bind(this)}>
+                Unfollow
+            </Button>
+        );
+
         const user_details = (
             <>
-                <Button variant="primary" onClick={this.unfollowUser.bind(this)}>
-                    Unfollow
-                </Button>
-
+                {(this.state.curr_user_id!=this.state.id) ? unfollow_button : null}
                 <div className="text-light">
                     {this.state.first_name + " " + this.state.last_name}
                 </div>
                 <div className="text-light">{this.state.birth_date}</div>
                 <div className="text-light">{this.state.email}</div>
             </>
-        );
-
-        const follow_button = (
-            <Button variant="primary" onClick={this.followUser.bind(this)}>
-                Follow
-            </Button>
         );
 
         return (
