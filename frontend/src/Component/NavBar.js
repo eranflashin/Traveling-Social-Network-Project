@@ -28,15 +28,11 @@ class Navbar extends Component {
         }
       })
       .then(response => {
-        this.setState({ username: "" });
         this.props.history.push(`/profile/` + response.data.id);
       })
       .catch(err => {
-        this.setState({ username: "" });
         alert("no user with this name");
       });
-
-    // alert('searching user ' + this.state.username);
   }
 
   onChange(e) {

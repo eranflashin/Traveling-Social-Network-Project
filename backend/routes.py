@@ -16,11 +16,11 @@ def get_auth_token():
 
 @app.route('/api/user_by_id/<int:user_id>', methods=['GET'])
 @auth.login_required
-def get_user(user_id):
+def get_user_name(user_id):
     user = models.User.query.get(user_id)
     if not user:
         abort(404)
-    return user.to_json(), 201
+    return jsonify({'username': user.username}), 201
 
 
 @app.route("/api/user_by_name/<string:name>", methods=['GET'])
@@ -29,7 +29,17 @@ def get_user_id(name):
     user = models.User.query.filter_by(username=name).first()
     if not user:
         abort(404)
-    return jsonify({'id': user.id}), 201, {'Location': url_for('get_user', user_id=user.id, _external=True)}
+    return jsonify({'id': user.id}), 201
+
+
+@app.route('/api/user/<int:user_id>', methods=['GET'])
+@auth.login_required
+@permissions.same_as_or_follows
+def get_user(user_id):
+    user = models.User.query.get(user_id)
+    if not user:
+        abort(404)
+    return user.to_json(), 201
 
 
 @app.route('/register', methods=['POST'])
@@ -180,7 +190,8 @@ def update_post(post_id):
             'latitude' not in data or 'longitude' not in data or 'content' not in data:
         abort(400, message="bad_json")
 
-    if not utils.is_date_valid(data['start_date']) or not utils.is_date_valid(data['end_date']) or not utils.dates_are_ordered(data['start_date'], data['end_date']):
+    if not utils.is_date_valid(data['start_date']) or not utils.is_date_valid(
+            data['end_date']) or not utils.dates_are_ordered(data['start_date'], data['end_date']):
         abort(400, message="Bad Dates")
 
     old_post = models.Post.query.get(post_id)
@@ -233,3 +244,36 @@ def get_followers(user_id):
 def get_followed(user_id):
     user = models.User.query.get(user_id)
     return user.get_followed(), 200
+
+
+@app.route('/api/follow', methods=['POST'])
+@auth.login_required
+def follow():
+    data = request.get_json()
+    if not data or 'user_id' not in data or 'followed_id' not in data:
+        abort(400, message="Bad Json")
+    user_id = data['user_id']
+    followed_id = data['followed_id']
+    user = models.User.query.get(user_id)
+    followed = models.User.query.get(followed_id)
+    if not user or not followed:
+        abort(404)
+    user.follow(followed)
+    return jsonify({'status': 'success'}), 201
+
+
+@app.route('/api/unfollow', methods=['POST'])
+@auth.login_required
+@permissions.same_as_or_follows
+def unfollow():
+    data = request.get_json()
+    if not data or 'user_id' not in data or 'followed_id' not in data:
+        abort(400, message="Bad Json")
+    user_id = data.user_id
+    followed_id = data.followed_id
+    user = models.User.query.get(user_id)
+    followed = models.User.query.get(followed_id)
+    if not user or not followed:
+        abort(404)
+    user.unfollow(followed)
+    return jsonify({'status': 'success'}), 201
