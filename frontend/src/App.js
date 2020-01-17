@@ -6,6 +6,7 @@ import Landing from "./Component/Landing";
 import Navbar from "./Component/NavBar";
 import PostFeed from "./Component/PostFeed";
 import UserProfile from "./Component/Profile";
+import MapSearch from "./Component/MapSearch";
 
 function isLoggedIn() {
   return !!localStorage.usertoken;
@@ -73,6 +74,18 @@ class App extends Component {
             render={props =>
               isLoggedIn() ? (
                 <UserProfile {...props} />
+              ) : (
+                <Redirect to={"/landing"} />
+              )
+            }
+          />
+
+          <Route
+            exact
+            path="/mapsearch"
+            render={props =>
+              isLoggedIn() ? (
+                <MapSearch {...props} />
               ) : (
                 <Redirect to={"/landing"} />
               )

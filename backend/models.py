@@ -92,12 +92,12 @@ class Post(db.Model):
     def __repr__(self):
         return "Travel('post no: {}: '{}' by {}')".format(self.id, self.title, self.user_id)
 
-    def is_close_enough(self, other_post, radius: float):
-        distance = sqrt((other_post.latitude - self.latitude)**2 -
-                        (other_post.longitude - self.longitude)**2)
-        if distance > radius:
-            return False
-        return date_between(self.start_date, self.end_date, other_post.start_date, other_post.end_date)
+    # def is_close_enough(self, other_post, radius: float):
+    #     distance = sqrt((other_post.latitude - self.latitude)**2 -
+    #                     (other_post.longitude - self.longitude)**2)
+    #     if distance > radius:
+    #         return False
+    #     return date_between(self.start_date, self.end_date, other_post.start_date, other_post.end_date)
 
     def to_json(self):
         json_post = {

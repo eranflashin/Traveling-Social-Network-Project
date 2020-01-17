@@ -3,8 +3,9 @@ import { Link, withRouter } from "react-router-dom";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
 import Form from "react-bootstrap/Form";
-import FormControl from "react-bootstrap/FormControl";
 import Button from "react-bootstrap/Button";
+import { FaHome, FaUserAlt, FaMapMarkedAlt, FaSearch } from "react-icons/fa";
+import { MdNotifications } from "react-icons/md";
 
 import Popup from "reactjs-popup";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -148,8 +149,14 @@ class Navbar extends Component {
           >
             <ul className="navbar-nav nav-fill w-50">
               <li className="nav-item">
+                <Link to="/mapsearch" className="nav-link">
+                  <FaMapMarkedAlt /> &nbsp; Map Search
+                </Link>
+              </li>
+
+              <li className="nav-item">
                 <Link to="/postfeed" className="nav-link">
-                  Home
+                  <FaHome /> &nbsp; Home
                 </Link>
               </li>
 
@@ -158,7 +165,7 @@ class Navbar extends Component {
                   to={"/profile/" + this.state.current_user}
                   className="nav-link"
                 >
-                  User
+                  <FaUserAlt /> &nbsp; User
                 </Link>
               </li>
 
@@ -177,7 +184,7 @@ class Navbar extends Component {
                 <datalist id="browsers">{suggestions_arr}</datalist>
 
                 <Button type="submit" variant="outline-secondary">
-                  Search
+                  <FaSearch /> &nbsp; Search
                 </Button>
               </Form>
 
@@ -195,7 +202,7 @@ class Navbar extends Component {
                 <Popup
                   trigger={
                     <Button type="button" className="btn btn-secondary  ">
-                      Notifications &nbsp;&nbsp;
+                      <MdNotifications /> &nbsp; Notifications &nbsp;&nbsp;
                       <span className="badge badge-pill badge-light">
                         {this.state.notifs_num}{" "}
                       </span>
