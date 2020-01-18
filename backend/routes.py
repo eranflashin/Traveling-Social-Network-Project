@@ -111,34 +111,36 @@ def get_similar_usernames(val):
     abort(404)
 
 
-@app.route("/api/newnotafications/<int:user_id>", methods=['GET'])
-@auth.login_required
-def get_new_notifs(user_id):
-    user = models.User.query.get(user_id)
-    if not user:
-        abort(404)
-    notifs = user.get_new_notifications()
-    return notifs, 201
-
-
-@app.route("/api/allnotafications/<int:user_id>", methods=['GET'])
+@app.route("/api/notafications/get/<int:user_id>", methods=['GET'])
 @auth.login_required
 def get_all_notifs(user_id):
     user = models.User.query.get(user_id)
     if not user:
         abort(404)
-    notifs = user.get_new_notifications()
-    return notifs, 201  # TODO change to all notifs
+    notifs = user.get_notifications()
+    return notifs, 201
 
 
-@app.route("/api/newnotafications_num/<int:user_id>", methods=['GET'])
+@app.route("/api/notifications/num/<int:user_id>", methods=['GET'])
 @auth.login_required
-def get_new_notifs_num(user_id):
+def get_notifs_num(user_id):
     user = models.User.query.get(user_id)
     if not user:
         abort(404)
-    num = user.num_of_new_notifications()
+    num = user.num_of_notifications()
     return jsonify({'num': num}), 201
+
+
+@app.route("/api/notifications/delete/<int:notif_id>", methods=['DELETE'])
+@auth.login_required
+@permissions.same_as
+def delete_notif(notif_id):
+    notif = models.Notification.query.get(notif_id)
+    if not notif:
+        abort(404)
+    db.session.delete(notif)
+    db.session.commit()
+    return jsonify({"message": "success"}), 204
 
 
 @app.route('/api/posts/get/<int:post_id>', methods=['GET'])
@@ -257,23 +259,22 @@ def follow():
     user = models.User.query.get(user_id)
     followed = models.User.query.get(followed_id)
     if not user or not followed:
-        abort(404)
+        abort(400, message="Bad Json")
     user.follow(followed)
     return jsonify({'status': 'success'}), 201
 
 
 @app.route('/api/unfollow', methods=['POST'])
 @auth.login_required
-@permissions.same_as_or_follows
 def unfollow():
     data = request.get_json()
     if not data or 'user_id' not in data or 'followed_id' not in data:
         abort(400, message="Bad Json")
-    user_id = data.user_id
-    followed_id = data.followed_id
+    user_id = data['user_id']
+    followed_id = data['followed_id']
     user = models.User.query.get(user_id)
     followed = models.User.query.get(followed_id)
     if not user or not followed:
-        abort(404)
+        abort(400, message="Bad Json")
     user.unfollow(followed)
     return jsonify({'status': 'success'}), 201

@@ -51,4 +51,16 @@ def same_as(f):
                     abort(403, message="")
             else:
                 return f(*args, **kwargs)
+
+        if 'notif_id' in kwargs:
+            notif = models.Notification.query.get(kwargs['notif_id'])
+            if notif is not None:
+                owner = notif.user_id
+                if owner.id == current_user.id:
+                    return f(*args, **kwargs)
+                else:
+                    abort(403, message="")
+            else:
+                return f(*args, **kwargs)
+
     return decorated_function

@@ -75,7 +75,6 @@ export default class UserProfile extends Component {
     }
 
     unfollowUser() {
-        alert("unfollowed");
         axios.post(
             "http://127.0.0.1:5000/api/unfollow",
             {
@@ -95,7 +94,6 @@ export default class UserProfile extends Component {
     }
 
     followUser() {
-        alert("follow");
         axios.post(
             "http://127.0.0.1:5000/api/follow",
             {

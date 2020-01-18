@@ -39,6 +39,7 @@ class Notification(db.Model):
                 'id': self.user_id,
                 'url': url_for('get_user', user_id=self.user_id, _external=True)
             },
+            'id': self.id,
             'is_read': self.is_read,
             'name': self.name,
             'data': self.get_data()
@@ -161,13 +162,15 @@ class User(db.Model, UserMixin):
 
     def follow(self, user):
         if not self.is_following(user):
-            f = Follow(follower=self, followed=user)
+            f = Follow(follower_id=self.id, followed_id=user.id)
             db.session.add(f)
+            db.session.commit()
 
     def unfollow(self, user):
         f = self.followed.filter_by(followed_id=user.id).first()
         if f:
             db.session.delete(f)
+            db.session.commit()
 
     def is_following(self, user):
         if user.id is None:
@@ -232,14 +235,12 @@ class User(db.Model, UserMixin):
         db.session.add(notification)
         return notification
 
-    def get_new_notifications(self):
-        new_notifs = self.notifications.filter(
-            Notification.is_read == False).all()
+    def get_notifications(self):
+        notifs = self.notifications.all()
+        return json.dumps([notif.to_json() for notif in notifs])
 
-        return json.dumps([notif.to_json() for notif in new_notifs])
-
-    def num_of_new_notifications(self):
-        return self.notifications.filter(Notification.is_read == False).count()
+    def num_of_notifications(self):
+        return self.notifications.count()
 
     def num_of_followers(self):
         return self.followers.count()
