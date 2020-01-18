@@ -6,20 +6,22 @@ from backend.routes import auth
 
 @app.errorhandler(400)
 def bad_request(e):
-    if 'message' in e.data:
+    if hasattr(e, 'data') and 'message' in e.data:
         return e.data['message'], 400
     return BadRequest(), 400
 
 
 @app.errorhandler(403)
 def forbidden(e):
-    if 'message' in e.data:
+    if hasattr(e, 'data') and 'message' in e.data:
         return e.data['message'], 403
     return Forbidden(), 403
 
 
 @app.errorhandler(404)
 def page_not_found(e):
+    if hasattr(e, 'data') and 'message' in e.data:
+        return e.data['message'], 404
     return NotFound(), 404
 
 

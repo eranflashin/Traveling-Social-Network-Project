@@ -3,7 +3,7 @@ import L from "leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import { Map, TileLayer } from "react-leaflet";
 
-export default class MyMap extends Component {
+export default class RegisterMap extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -39,8 +39,6 @@ export default class MyMap extends Component {
       keepResult: true
     }).addTo(map);
 
-    new L.LayerGroup().addTo(map);
-
     map.on("geosearch/showlocation", this.onFoundLocation.bind(this));
 
     window.dispatchEvent(new Event("resize"));
@@ -71,7 +69,6 @@ export default class MyMap extends Component {
           attribution="&amp;copy Google"
           url={"http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"}
         />
-        <div className="pointer"></div>
       </Map>
     );
   }

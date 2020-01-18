@@ -73,13 +73,11 @@ def save_picture(form_picture):
 
 
 def date_between(start_date, end_date, start_date_arg, end_date_arg):
-    start_date_arg_converted = datetime.datetime.strptime(
-        start_date_arg.split('T')[0], '%Y-%m-%d').date()
-    end_date_arg_converted = datetime.datetime.strptime(
-        end_date_arg.split('T')[0], '%Y-%m-%d').date()
+    start_date_parsed = datetime.strptime(start_date, '%Y-%m-%d').date()
+    end_date_parsed = datetime.strptime(end_date, '%Y-%m-%d').date()
 
-    if start_date.date() <= end_date_arg_converted:
-        return end_date.date() >= start_date_arg_converted
+    if start_date_parsed <= end_date_arg.date():
+        return end_date_parsed >= start_date_arg.date()
     return False
 
 
