@@ -435,13 +435,14 @@ input[name="browser"] {
 }
 
 .mapSearchMapContainer {
-  height: 80vh;
+  height: 75vh;
   width: 100%;
-  margin-top: 2%;
+  margin-top: 0.1%;
   border-radius: 40px;
   -moz-box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 5px;
   -webkit-box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 5px;
   box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 5px;
+  z-index: 0;
 }
 
 .mapSearchMap {

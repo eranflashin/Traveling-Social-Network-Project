@@ -1,11 +1,11 @@
-import React, { Component, useState } from "react";
+import React, { Component } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "react-datepicker/dist/react-datepicker.css";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import DateRangePicker from "@wojtekmaj/react-daterange-picker";
-import MyMap from "./GeoSearchComponent";
+import RegisterMap from "./GeoSearchComponent";
 import Alert from "reactstrap/es/Alert";
 
 export const processDate = date => {
@@ -171,6 +171,9 @@ export default class PostForm extends Component {
           this.setState({ post_title_not_valid: 0 });
         }
         break;
+
+      default:
+        break;
     }
   }
 
@@ -249,7 +252,7 @@ export default class PostForm extends Component {
                     </Row>
                   </Col>
                   <Col id="mapCol">
-                    <MyMap
+                    <RegisterMap
                       onResult={this.handleMapResult.bind(this)}
                       initLocation={{
                         lat: this.state.data.lat,

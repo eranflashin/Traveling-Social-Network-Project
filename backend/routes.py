@@ -1,4 +1,5 @@
 from datetime import datetime
+from geopy import distance
 
 from flask import request, jsonify, url_for, g
 from flask_login import logout_user, current_user, login_user
@@ -277,3 +278,36 @@ def unfollow():
         abort(404)
     user.unfollow(followed)
     return jsonify({'status': 'success'}), 201
+
+
+@app.route('/api/partner_search', methods=['GET', 'POST'])
+@auth.login_required
+def partner_search():
+    user_id = current_user.id
+    data = request.get_json()
+
+    if not data or 'latitude' not in data or 'longitude' not in data or \
+       'start_date' not in data or 'end_date' not in data or 'radius' not in data:
+        abort(400, message="Bad Json")
+
+    if not utils.is_date_valid(data['start_date']) or \
+       not utils.is_date_valid(data['end_date']) or \
+       not utils.dates_are_ordered(data['start_date'], data['end_date']):
+        abort(400, message="Bad Dates")
+
+    def filterNotPotentialPartners(post):
+        if post.owner.id == user_id or current_user.is_following(post.owner):
+            return False
+
+        dist_between = distance.distance(
+            (data['latitude'], data['longitude']), (post.latitude, post.longitude)).km
+
+        if dist_between > data['radius']:
+            return False
+
+        return utils.date_between(data['start_date'], data['end_date'], post.start_date, post.end_date)
+
+    potential_partner_posts = list(filter(
+        filterNotPotentialPartners, models.Post.query.all()))
+
+    return {potential_post.id: potential_post.to_json() for potential_post in potential_partner_posts}, 200
