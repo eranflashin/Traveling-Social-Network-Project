@@ -44,24 +44,31 @@ const makeASubscription = post_id => {
 
 const addNewPost = post => {
   axios.defaults.withCredentials = true;
-  return axios.post(
-    "http://127.0.0.1:5000/api/posts/new",
-    {
-      title: post.title,
-      content: post.content,
-      start_date: processDate(post.date[0]),
-      end_date: processDate(post.date[1]),
-      country: post.country,
-      city: post.city,
-      latitude: post.lat,
-      longitude: post.lon
-    },
-    {
-      headers: {
-        Authorization: "Basic " + btoa(localStorage.usertoken + ":")
+  return axios
+    .post(
+      "http://127.0.0.1:5000/api/posts/new",
+      {
+        title: post.title,
+        content: post.content,
+        start_date: processDate(post.date[0]),
+        end_date: processDate(post.date[1]),
+        country: post.country,
+        city: post.city,
+        latitude: post.lat,
+        longitude: post.lon
+      },
+      {
+        headers: {
+          Authorization: "Basic " + btoa(localStorage.usertoken + ":")
+        }
       }
-    }
-  );
+    )
+    .catch(err => {
+      if (err.response && err.response.status == 403) {
+        return "notAuth";
+      }
+      return "invalid";
+    });
 };
 
 const bringUsersPosts = () => {
@@ -81,6 +88,9 @@ const bringUsersPosts = () => {
       return result_list;
     })
     .catch(err => {
+      if (err.response && err.response.status === 403) {
+        return "notAuth";
+      }
       return "invalid action";
     });
 };
@@ -151,7 +161,9 @@ export default class PostFeed extends Component {
 
   onClickNewPostEnd = post => {
     addNewPost(post).then(res => {
-      if (res === "invalid action") {
+      if (res === "notAuth") {
+        notAuth(this.props.history);
+      } else if (res == "invalid") {
         this.setState({ invalid_action: 1 });
       } else {
         this.componentDidMount();
@@ -212,6 +224,8 @@ export default class PostFeed extends Component {
     bringUsersPosts().then(res => {
       if (res === "invalid action") {
         this.setState({ invalid_action: 1 });
+      } else if (res === "notAuth") {
+        notAuth(this.props.history);
       } else {
         this.setState({ posts_array: res, is_loading: false });
       }

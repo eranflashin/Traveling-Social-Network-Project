@@ -6,6 +6,8 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { FaHome, FaUserAlt, FaMapMarkedAlt, FaSearch } from "react-icons/fa";
 import { MdNotifications } from "react-icons/md";
+import notAuth from "./Utils";
+import { notify } from "react-notify-toast";
 
 import Popup from "reactjs-popup";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -21,7 +23,7 @@ class Navbar extends Component {
 
   get_user() {
     axios.defaults.withCredentials = true;
-    axios
+    return axios
       .get("http://127.0.0.1:5000/api/user_by_name/" + this.state.username, {
         headers: {
           Authorization: "Basic " + btoa(localStorage.usertoken + ":")
@@ -31,10 +33,14 @@ class Navbar extends Component {
         this.props.history.push(`/profile/` + response.data.id);
       })
       .catch(err => {
-        if (this.state.username.length > 0) {
-          alert("No user with this name");
+        if (err.response && err.response.status === 403) {
+          notAuth(this.props.history);
         } else {
-          alert("Please enter a username first");
+          if (this.state.username.length > 0) {
+            notify.show("No user with this name", "warning", 3000);
+          } else {
+            notify.show("Please enter a username first", "warning", 3000);
+          }
         }
       });
   }
@@ -52,7 +58,11 @@ class Navbar extends Component {
         this.setState({ suggestions: response.data.suggestions });
       })
       .catch(err => {
-        this.setState({ suggestions: [] });
+        if (err.response && err.response.status === 403) {
+          notAuth(this.props.history);
+        } else {
+          this.setState({ suggestions: [] });
+        }
       });
   }
 
@@ -70,12 +80,12 @@ class Navbar extends Component {
         this.props.history.push("/");
       })
       .catch(err => {
-        console.log(err);
+        notAuth(this.props.history);
       });
   }
 
   handleNotifClick(notif_id) {
-    //delete notification now that it is read
+    axios.defaults.withCredentials = true;
     return axios
       .delete("http://127.0.0.1:5000/api/notifications/delete/" + notif_id, {
         headers: {
@@ -87,16 +97,19 @@ class Navbar extends Component {
         this.componentDidMount();
       })
       .catch(err => {
-        return "invalid action";
+        if (err.response && err.response.status === 403) {
+          notAuth(this.props.history);
+        } else {
+          return "invalid action";
+        }
       });
-
-    //TODO:open post from notification
   }
 
   get_notifs() {
+    axios.defaults.withCredentials = true;
     axios
       .get(
-        "http://127.0.0.1:5000/api/notafications/get/" +
+        "http://127.0.0.1:5000/api/notifications/get/" +
           this.state.current_user,
         {
           headers: {
@@ -108,7 +121,8 @@ class Navbar extends Component {
         this.setState({ notifications: response.data });
       })
       .catch(err => {
-        console.log(err);
+        if (err.response && err.response.status === 403)
+          notAuth(this.props.history);
       });
   }
 
@@ -122,6 +136,10 @@ class Navbar extends Component {
     const token = localStorage.usertoken;
     if (token) {
       const decoded = jwt_decode(token);
+      this.setState({
+        current_user: decoded.id
+      });
+      axios.defaults.withCredentials = true;
       axios
         .get("http://127.0.0.1:5000/api/notifications/num/" + decoded.id, {
           headers: {
@@ -132,11 +150,11 @@ class Navbar extends Component {
           this.setState({ notifs_num: response.data.num });
         })
         .catch(err => {
+          if (err.response && err.response.status === 403) {
+            notAuth(this.props.history);
+          }
           this.setState({ notifs_num: -1 });
         });
-      this.setState({
-        current_user: decoded.id
-      });
     }
   }
 
@@ -156,8 +174,8 @@ class Navbar extends Component {
       );
     });
 
-    let suggestions_arr = this.state.suggestions.map(sugg => {
-      return <option value={sugg} />;
+    let suggestions_arr = this.state.suggestions.map((sugg, index) => {
+      return <option value={sugg} key={`option-${index}`} />;
     });
 
     return (
@@ -190,8 +208,9 @@ class Navbar extends Component {
                 inline
                 onSubmit={e => {
                   e.preventDefault();
-                  this.get_user();
-                  this.setState({ username: "" });
+                  this.get_user().then(res => {
+                    this.setState({ username: "" });
+                  });
                 }}
               >
                 <input

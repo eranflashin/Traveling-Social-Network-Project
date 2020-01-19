@@ -112,7 +112,7 @@ def get_similar_usernames(val):
     abort(404)
 
 
-@app.route("/api/notafications/get/<int:user_id>", methods=['GET'])
+@app.route("/api/notifications/get/<int:user_id>", methods=['GET'])
 @auth.login_required
 def get_all_notifs(user_id):
     user = models.User.query.get(user_id)

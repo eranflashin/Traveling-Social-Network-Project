@@ -8,6 +8,7 @@ import DateRangePicker from "@wojtekmaj/react-daterange-picker";
 import jwt_decode from "jwt-decode";
 import NumericInput from "react-numeric-input";
 import { processDate } from "./PostForm";
+import notAuth from "./Utils";
 
 var GeoJSONParser = require("geojson");
 
@@ -97,6 +98,11 @@ const searchForPartners = (latlng, dates, radius, user_id) => {
     .then(res => {
       const result = convertToGeoJson(res, user_id);
       return result;
+    })
+    .catch(err => {
+      if (err.response && err.response.status === 403) {
+        return "notAuth";
+      }
     });
 };
 
@@ -112,7 +118,9 @@ const getFollowedGeoJson = user_id => {
       return convertToGeoJson(res, user_id);
     })
     .catch(err => {
-      alert(err);
+      if (err.response && err.response.status === 403) {
+        return "notAuth";
+      }
     });
 };
 
@@ -142,41 +150,42 @@ export default class MapSearch extends Component {
         this.state.dates_query,
         this.state.radius_query,
         this.state.user_id
-      ).then(geoJson => {
-        const map = this.mapRef.leafletElement;
-        const query_res_layer = L.geoJSON(geoJson, {
-          pointToLayer: function(feature, latlng) {
-            return L.marker(latlng, { icon: searchResIcon });
-          },
-          onEachFeature: function(feature, layer) {
-            const popupText =
-              "<big><b>Possible Partner:&nbsp" +
-              feature.properties.username +
-              "</b></big><br><b>Start Date:</b>&nbsp;" +
-              feature.properties.dates.start_date +
-              "<br><b>End Date:</b>&nbsp;" +
-              feature.properties.dates.end_date +
-              "<br><b>Country:</b>&nbsp;" +
-              feature.properties.country +
-              "<br><b>City:</b>&nbsp;" +
-              feature.properties.city;
-            layer.bindPopup(popupText, {
-              closeButton: true,
-              offset: L.point(0, -20)
-            });
-            layer.on("click", function() {
-              layer.openPopup();
-            });
+      ).then(res => {
+        if (res === "notAuth") {
+          notAuth(this.props.history);
+        } else {
+          const map = this.mapRef.leafletElement;
+          const query_res_layer = L.geoJSON(res, {
+            pointToLayer: function(feature, latlng) {
+              return L.marker(latlng, { icon: searchResIcon });
+            },
+            onEachFeature: function(feature, layer) {
+              const popupText =
+                "<big><b>Possible Partner:&nbsp" +
+                feature.properties.username +
+                "</b></big><br><b>Start Date:</b>&nbsp;" +
+                feature.properties.dates.start_date +
+                "<br><b>End Date:</b>&nbsp;" +
+                feature.properties.dates.end_date +
+                "<br><b>Country:</b>&nbsp;" +
+                feature.properties.country +
+                "<br><b>City:</b>&nbsp;" +
+                feature.properties.city;
+              layer.bindPopup(popupText, {
+                closeButton: true,
+                offset: L.point(0, -20)
+              });
+              layer.on("click", function() {
+                layer.openPopup();
+              });
+            }
+          });
+          if (this.state.query_result_layer) {
+            this.state.query_result_layer.remove();
           }
-        });
-        if (this.state.query_result_layer) {
-          this.state.query_result_layer.remove();
+          this.setState({ query_result_layer: query_res_layer });
+          query_res_layer.addTo(map);
         }
-        this.setState({ query_result_layer: query_res_layer });
-        query_res_layer.addTo(map);
-        // if (geoJson.features.length > 0) {
-        //   map.fitBounds(query_res_layer.getBounds());
-        // }
       });
     }
   }
@@ -205,45 +214,49 @@ export default class MapSearch extends Component {
     map.on("geosearch/showlocation", this.onFoundLocation.bind(this));
     map.on("click", this.onFoundLocation.bind(this));
 
-    getFollowedGeoJson(this.state.user_id).then(geoJson => {
-      const followedPostsLayer = L.geoJSON(geoJson, {
-        pointToLayer: function(feature, latlng) {
-          return L.marker(latlng, { icon: followedIcon });
-        },
+    getFollowedGeoJson(this.state.user_id).then(res => {
+      if (res === "notAuth") {
+        notAuth(this.props.history);
+      } else {
+        const followedPostsLayer = L.geoJSON(res, {
+          pointToLayer: function(feature, latlng) {
+            return L.marker(latlng, { icon: followedIcon });
+          },
 
-        onEachFeature: function(feature, layer) {
-          const popupText =
-            "<big><b>Followed Traveler:&nbsp" +
-            feature.properties.username +
-            "</b></big><br><b>Start Date:</b>&nbsp;" +
-            feature.properties.dates.start_date +
-            "<br><b>End Date:</b>&nbsp;" +
-            feature.properties.dates.end_date +
-            "<br><b>Country:</b>&nbsp;" +
-            feature.properties.country +
-            "<br><b>City:</b>&nbsp;" +
-            feature.properties.city;
+          onEachFeature: function(feature, layer) {
+            const popupText =
+              "<big><b>Followed Traveler:&nbsp" +
+              feature.properties.username +
+              "</b></big><br><b>Start Date:</b>&nbsp;" +
+              feature.properties.dates.start_date +
+              "<br><b>End Date:</b>&nbsp;" +
+              feature.properties.dates.end_date +
+              "<br><b>Country:</b>&nbsp;" +
+              feature.properties.country +
+              "<br><b>City:</b>&nbsp;" +
+              feature.properties.city;
 
-          layer.bindPopup(popupText, {
-            closeButton: true,
-            offset: L.point(0, -20)
-          });
-          layer.on("click", function() {
-            layer.openPopup();
-          });
+            layer.bindPopup(popupText, {
+              closeButton: true,
+              offset: L.point(0, -20)
+            });
+            layer.on("click", function() {
+              layer.openPopup();
+            });
+          }
+        }).addTo(map);
+        if (res.features.length == 1) {
+          map.fitBounds(
+            followedPostsLayer.getBounds().extend([[[51.51, -0.118]]])
+          );
+        } else if (res.features.length > 1) {
+          map.fitBounds(followedPostsLayer.getBounds());
         }
-      }).addTo(map);
-      if (geoJson.features.length == 1) {
-        map.fitBounds(
-          followedPostsLayer.getBounds().extend([[[51.51, -0.118]]])
-        );
-      } else if (geoJson.features.length > 1) {
-        map.fitBounds(followedPostsLayer.getBounds());
-      }
 
-      this.setState({
-        followed_layer: followedPostsLayer
-      });
+        this.setState({
+          followed_layer: followedPostsLayer
+        });
+      }
     });
   }
 
