@@ -9,6 +9,7 @@ import jwt_decode from "jwt-decode";
 import NumericInput from "react-numeric-input";
 import { processDate } from "./PostForm";
 import notAuth from "./Utils";
+import { notify } from "react-notify-toast";
 
 var GeoJSONParser = require("geojson");
 
@@ -289,7 +290,7 @@ export default class MapSearch extends Component {
   onChangeDates = dates => {
     if (dates != null) {
       if (dates[0] > dates[1]) {
-        alert("Start-date must come before End-date");
+        notify.show("Start-date must come before End-date", "error", 3000);
         this.setState({ dates_query: null });
       } else {
         this.setState({ dates_query: dates });
