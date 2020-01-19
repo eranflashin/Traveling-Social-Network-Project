@@ -49,7 +49,7 @@ def register_user():
     user = utils.make_new_user_or_abort(data)
     db.session.add(user)
     db.session.commit()
-    return jsonify({'message': 'Created', 'username': user.username}), 201, {
+    return jsonify({'status': 'Created', 'username': user.username}), 201, {
         'Location': url_for('get_user', user_id=user.id,
                             _external=True)}
 
@@ -212,6 +212,13 @@ def update_post(post_id):
 
         db.session.commit()
 
+        for subscriber in old_post.get_subscribers():
+            notif_name = "{} changed".format(post_id)
+            data = {'type': 'edited', 'post_id': post_id,
+                            'post_title': old_post.title,
+                            'owner_name': current_user.username}
+            subscriber.add_notification(notif_name, data)
+
         return jsonify({'message': 'success', 'post_id': old_post.id}), 200, {
             'Location': url_for('get_post', post_id=old_post.id, _external=True)}
     else:
@@ -281,7 +288,7 @@ def unfollow():
     return jsonify({'status': 'success'}), 201
 
 
-@app.route('/api/partner_search', methods=['GET', 'POST'])
+@app.route('/api/partner_search', methods=['POST'])
 @auth.login_required
 def partner_search():
     user_id = current_user.id
@@ -297,7 +304,7 @@ def partner_search():
         abort(400, message="Bad Dates")
 
     def filterNotPotentialPartners(post):
-        if post.owner.id == user_id or current_user.is_following(post.owner):
+        if post.owner.id == user_id:
             return False
 
         dist_between = distance.distance(
@@ -312,3 +319,24 @@ def partner_search():
         filterNotPotentialPartners, models.Post.query.all()))
 
     return {potential_post.id: potential_post.to_json() for potential_post in potential_partner_posts}, 200
+
+
+@app.route('/api/subs/new', methods=['POST'])
+@auth.login_required
+def subscribe_user_to_post():
+    user_id = current_user.id
+    data = request.get_json()
+
+    if not data or 'post_id' not in data:
+        abort(400, message="Bad Json")
+
+    post = models.Post.query.get(data['post_id'])
+    if post is None:
+        abort(404)
+
+    if current_user.is_subscribed(post):
+        abort(403, message="Already subscribed")
+
+    current_user.subscribe_to_post(post)
+
+    return jsonify({'status': "Create"}), 201

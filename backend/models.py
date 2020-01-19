@@ -15,7 +15,6 @@ class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    is_read = db.Column(db.Boolean, nullable=False, default=False)
     payload_json = db.Column(db.Text, nullable=False)
 
     def get_data(self):
@@ -23,9 +22,6 @@ class Notification(db.Model):
 
     def get_name(self):
         return self.name
-
-    def get_is_read(self):
-        return self.is_read
 
     def get_notified_user(self):
         return self.user
@@ -37,16 +33,14 @@ class Notification(db.Model):
                 'id': self.user_id,
                 'url': url_for('get_user', user_id=self.user_id, _external=True)
             },
-            'id': self.id,
-            'is_read': self.is_read,
-            'name': self.name,
+            'notif_id': self.id,
             'data': self.get_data()
         }
 
         return json_notif
 
     def __repr__(self):
-        return "Notification to: {} , data: {}, is_read: {}".format(self.user_id, self.payload_json, self.is_read)
+        return "Notification to: {} , data: {}".format(self.user_id, self.payload_json)
 
 
 class Follow(db.Model):
@@ -118,6 +112,9 @@ class Post(db.Model):
 
         return json_post
 
+    def get_subscribers(self):
+        return [subsRel.subscriber for subsRel in self.subscribers]
+
 
 class User(db.Model, UserMixin):
     __tablename__ = "users"
@@ -179,12 +176,13 @@ class User(db.Model, UserMixin):
         if not self.is_subscribed(post):
             sub = Subscribe(subscriber=self, post=post)
             db.session.add(sub)
+            db.session.commit()
 
     def is_subscribed(self, post: Post):
         if post.id is None:
             return False
 
-        return self.subscriptions.query.filter_by(subscriber=self, post=post).first() is not None
+        return self.subscriptions.filter_by(subscriber=self, post=post).first() is not None
 
     def unsubscribe_from_post(self, post: Post):
         if self.is_subscribed(post):
@@ -224,6 +222,7 @@ class User(db.Model, UserMixin):
         notification = Notification(
             name=name, payload_json=json.dumps(data), user=self)
         db.session.add(notification)
+        db.session.commit()
         return notification
 
     def get_notifications(self):

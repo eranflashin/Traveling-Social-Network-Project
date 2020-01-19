@@ -14,9 +14,30 @@ import { FaPlus } from "react-icons/fa";
 import PostForm from "./PostForm";
 import { processDate } from "./PostForm";
 
+const makeASubscription = post_id => {
+  axios.defaults.withCredentials = true;
+  return axios
+    .post(
+      "http://127.0.0.1:5000/api/subs/new",
+      {
+        post_id: post_id
+      },
+      {
+        headers: {
+          Authorization: "Basic " + btoa(localStorage.usertoken + ":")
+        }
+      }
+    )
+    .then(res => {
+      alert("subscription has succeeded!");
+    })
+    .catch(err => {
+      alert("subscription has failed");
+    });
+};
+
 const addNewPost = post => {
   axios.defaults.withCredentials = true;
-  debugger;
   return axios.post(
     "http://127.0.0.1:5000/api/posts/new",
     {
@@ -146,8 +167,8 @@ export default class PostFeed extends Component {
     });
   };
 
-  onClickEditStart = post => {
-    this.postsRefsMap.get(post.key).handleShow();
+  onClickEditStart = post_key => {
+    this.postsRefsMap.get(post_key).handleShow();
   };
 
   onClickEditEnd = (new_post, post_id) => {
@@ -161,7 +182,7 @@ export default class PostFeed extends Component {
   };
 
   onClickSubs = post_id => {
-    console.log(post_id);
+    makeASubscription(post_id);
   };
 
   setPostFormRef = (post_id, ref) => {
@@ -281,7 +302,10 @@ export default class PostFeed extends Component {
                         <Row>
                           <Col>
                             {this.state.self_id !== post.data.owner.id ? (
-                              <div className="postControlButton">
+                              <div
+                                className="postControlButton"
+                                onClick={() => this.onClickSubs(post.key)}
+                              >
                                 <div className="postControlButton-translate"></div>
                                 Subscribe
                               </div>
@@ -293,7 +317,7 @@ export default class PostFeed extends Component {
                             {this.state.self_id === post.data.owner.id ? (
                               <div
                                 className="postControlButton"
-                                onClick={() => this.onClickEditStart(post)}
+                                onClick={() => this.onClickEditStart(post.key)}
                               >
                                 <div className="postControlButton-translate"></div>
                                 Edit

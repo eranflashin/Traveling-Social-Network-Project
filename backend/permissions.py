@@ -56,7 +56,7 @@ def same_as(f):
             notif = models.Notification.query.get(kwargs['notif_id'])
             if notif is not None:
                 owner = notif.user_id
-                if owner.id == current_user.id:
+                if owner == current_user.id:
                     return f(*args, **kwargs)
                 else:
                     abort(403, message="")

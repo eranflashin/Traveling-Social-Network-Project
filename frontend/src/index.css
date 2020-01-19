@@ -239,7 +239,7 @@ html {
   text-align: center;
 
   font-size: 24px;
-  font-family: sans-serif;
+  font-family: "Raleway", sans-serif;
   font-weight: 300;
 
   position: absolute;
@@ -447,4 +447,9 @@ input[name="browser"] {
 
 .mapSearchMap {
   height: 100%;
+}
+
+.menu-item {
+  font-family: "Raleway", sans-serif;
+  border: 0.5px black solid;
 }
