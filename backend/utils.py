@@ -113,6 +113,39 @@ def make_new_user_or_abort(data):
     return user
 
 
+def update_user_or_abort(user_id, data):
+
+    if not data or 'email' not in data or 'password' not in data \
+            or 'first_name' not in data or 'last_name' not in data \
+            or 'username' not in data or 'birth_date' not in data or 'gender' not in data:
+        abort(400, message="Bad Json")
+
+    if len(data['email']) > 120 or len(data['first_name']) > 20 or len(data['last_name']) > 20 or \
+        len(data['username']) > 20 or not is_email_valid(data['email']) or not is_date_valid(
+            data['birth_date']):
+        abort(400, message="Bad Json")
+
+    temp_user = models.User.query.filter_by(email=data['email']).first()
+    if temp_user is not None and temp_user.id != current_user.id:
+        abort(409, message="Email Taken")
+
+    temp_user = models.User.query.filter_by(username=data['username']).first()
+    if temp_user is not None and temp_user.id != current_user.id:
+        abort(409, message='Username Taken')
+
+    user = models.User.query.get(user_id)
+    if user is not None:
+        user.username = data['username']
+        user.email = data['email']
+        user.password = data['password']
+        user.first_name = data['first_name']
+        user.last_name = data['last_name']
+        user.birth_date = datetime.strptime(data['birth_date'], '%Y-%m-%d')
+        user.gender = data['gender']
+
+    return user
+
+
 def make_new_post_or_abort(data, user=None):
     if(user is None):
         user = current_user

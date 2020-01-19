@@ -182,6 +182,18 @@ def add_post():
         'Location': url_for('get_post', post_id=new_post.id, _external=True)}
 
 
+@app.route("/api/updateuser/<int:user_id>", methods=['PUT'])
+@auth.login_required
+@permissions.same_as
+def update_user(user_id):
+    data = request.get_json()
+    user = utils.update_user_or_abort(user_id, data)
+    db.session.commit()
+    return jsonify({'message': 'Updated', 'username': user.username}), 201, {
+        'Location': url_for('get_user', user_id=user.id,
+                            _external=True)}
+
+
 @app.route("/api/posts/update/<int:post_id>", methods=['PUT'])
 @auth.login_required
 @permissions.same_as
