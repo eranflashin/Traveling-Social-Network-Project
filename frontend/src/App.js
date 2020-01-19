@@ -7,6 +7,7 @@ import Navbar from "./Component/NavBar";
 import PostFeed from "./Component/PostFeed";
 import UserProfile from "./Component/Profile";
 import MapSearch from "./Component/MapSearch";
+import Notifications from "react-notify-toast";
 
 function isLoggedIn() {
   return !!localStorage.usertoken;
@@ -17,6 +18,7 @@ class App extends Component {
     return (
       <Router>
         <div className="App">
+          <Notifications />
           <Route render={() => (isLoggedIn() ? <Navbar /> : null)} />
           <Route
             exact

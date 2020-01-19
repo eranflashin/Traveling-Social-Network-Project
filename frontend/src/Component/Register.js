@@ -6,6 +6,7 @@ import axios from "axios";
 import { login } from "./Login";
 import PostForm from "./PostForm";
 import { processDate } from "./PostForm";
+import { notify } from "react-notify-toast";
 
 export const register = newUser => {
   return axios
@@ -19,7 +20,7 @@ export const register = newUser => {
       password: newUser.password
     })
     .then(response => {
-      return response.data.message;
+      return response.data.status;
     })
     .catch(err => {
       if (err.response && err.response.status === 409) {
@@ -169,6 +170,11 @@ class Register extends Component {
       if (!this.state.pressed_new_post) {
         register(newUser).then(res => {
           if (res == "Created") {
+            notify.show(
+              "Registered Successfully, redirecting to post feed!",
+              "success",
+              3000
+            );
             const user = {
               email: newUser.email,
               password: newUser.password
@@ -178,10 +184,12 @@ class Register extends Component {
             });
           }
           if (res == "Username Taken") {
+            notify.show("Registration Failed", "error", 3000);
             this.setState({ user_taken: 1 });
             this.setState({ invalid: 1 });
           }
           if (res == "Email Taken") {
+            notify.show("Registration Failed", "error", 3000);
             this.setState({ email_taken: 1 });
             this.setState({ invalid: 1 });
           }
@@ -199,6 +207,11 @@ class Register extends Component {
         };
         registerAndPost(newUser, newPost).then(res => {
           if (res == "Created") {
+            notify.show(
+              "Registered Successfully, redirecting to post feed!",
+              "success",
+              3000
+            );
             const user = {
               email: newUser.email,
               password: newUser.password
@@ -208,14 +221,17 @@ class Register extends Component {
             });
           }
           if (res == "Username Taken") {
+            notify.show("Registration Failed", "error", 3000);
             this.setState({ user_taken: 1 });
             this.setState({ invalid: 1 });
           }
           if (res == "Email Taken") {
+            notify.show("Registration Failed", "error", 3000);
             this.setState({ email_taken: 1 });
             this.setState({ invalid: 1 });
           }
           if (res == "Post Create Failed") {
+            notify.show("Registration Failed", "error", 3000);
             this.setState({ invalid: 1 });
           }
         });

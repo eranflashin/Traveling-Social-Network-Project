@@ -13,6 +13,8 @@ import { MdDateRange, MdPlace } from "react-icons/md";
 import { FaPlus } from "react-icons/fa";
 import PostForm from "./PostForm";
 import { processDate } from "./PostForm";
+import { notify } from "react-notify-toast";
+import notAuth from "./Utils";
 
 const makeASubscription = post_id => {
   axios.defaults.withCredentials = true;
@@ -29,10 +31,14 @@ const makeASubscription = post_id => {
       }
     )
     .then(res => {
-      alert("subscription has succeeded!");
+      return "success";
     })
     .catch(err => {
-      alert("subscription has failed");
+      if (err.response && err.response.data == "Already subscribed") {
+        return err.response.data;
+      } else {
+        return "notAuth";
+      }
     });
 };
 
@@ -182,7 +188,20 @@ export default class PostFeed extends Component {
   };
 
   onClickSubs = post_id => {
-    makeASubscription(post_id);
+    makeASubscription(post_id).then(res => {
+      switch (res) {
+        case "success":
+          notify.show("Subscribed Successfully!", "success", 3000);
+          break;
+        case "Already subscribed":
+          notify.show("Subscription Failed!", "error", 3000);
+          break;
+        case "notAuth":
+          notAuth(this.props.history);
+        default:
+          break;
+      }
+    });
   };
 
   setPostFormRef = (post_id, ref) => {

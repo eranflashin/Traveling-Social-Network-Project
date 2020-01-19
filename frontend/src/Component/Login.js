@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Alert from "reactstrap/es/Alert";
 import axios from "axios";
+import { notify } from "react-notify-toast";
 
 export const login = user => {
   axios.defaults.withCredentials = true;
@@ -15,6 +16,7 @@ export const login = user => {
   })
     .then(response => {
       localStorage.setItem("usertoken", response.data);
+
       return response.data;
     })
     .catch(err => {
@@ -33,7 +35,6 @@ export const login = user => {
             return response.data.token;
           })
           .catch(err => {
-            console.log(err);
             return "loginError";
           });
       } else {
@@ -101,15 +102,15 @@ export default class Login extends Component {
     };
 
     if (validateForm(this.state.errors)) {
-      login(user)
-        .then(res => {
-          if (res !== "loginError") {
-            this.props.history.push(`/postfeed`);
-          } else {
-            this.setState({ invalid: 1 });
-          }
-        })
-        .catch(err => console.log(err));
+      login(user).then(res => {
+        if (res !== "loginError") {
+          notify.show("Logged in!", "success", 3000);
+          this.props.history.push(`/postfeed`);
+        } else {
+          notify.show("Login Failed!", "error", 3000);
+          this.setState({ invalid: 1 });
+        }
+      });
     } else {
       this.setState({ invalid: 1 });
     }
