@@ -189,6 +189,7 @@ class User(db.Model, UserMixin):
             sub = self.subscriptions.filter_by(
                 subscriber=self, post=post).first()
             db.session.delete(sub)
+            db.session.commit()
 
     def generate_auth_token(self, expiration=600):
         s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
@@ -244,9 +245,9 @@ class User(db.Model, UserMixin):
     def get_followed(self):
         return [folRel.followed for folRel in self.followed]
 
-    def get_posts(self):
+    def get_posts(self, check_subscribed):
         posts = self.posts.all()
-        return {post.id: post.to_json() for post in posts}
+        return {post.id: {**post.to_json(), 'is_subscribed': check_subscribed.is_subscribed(post)} for post in posts}
 
     def to_json(self):
 

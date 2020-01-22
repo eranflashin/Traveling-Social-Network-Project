@@ -42,6 +42,32 @@ const makeASubscription = post_id => {
     });
 };
 
+const makeAUnSubscription = post_id => {
+  axios.defaults.withCredentials = true;
+  return axios
+    .post(
+      "http://127.0.0.1:5000/api/subs/delete",
+      {
+        post_id: post_id
+      },
+      {
+        headers: {
+          Authorization: "Basic " + btoa(localStorage.usertoken + ":")
+        }
+      }
+    )
+    .then(res => {
+      return "success";
+    })
+    .catch(err => {
+      if (err.response && err.response.data == "Already unsubscribed") {
+        return err.response.data;
+      } else {
+        return "notAuth";
+      }
+    });
+};
+
 const addNewPost = post => {
   axios.defaults.withCredentials = true;
   return axios
@@ -204,9 +230,28 @@ export default class PostFeed extends Component {
       switch (res) {
         case "success":
           notify.show("Subscribed Successfully!", "success", 3000);
+          this.componentDidMount();
           break;
         case "Already subscribed":
           notify.show("Subscription Failed!", "error", 3000);
+          break;
+        case "notAuth":
+          notAuth(this.props.history);
+        default:
+          break;
+      }
+    });
+  };
+
+  onClickUnSubs = post_id => {
+    makeAUnSubscription(post_id).then(res => {
+      switch (res) {
+        case "success":
+          notify.show("Unsubscribed Successfully!", "success", 3000);
+          this.componentDidMount();
+          break;
+        case "Already unsubscribed":
+          notify.show("Unsubscription Failed!", "error", 3000);
           break;
         case "notAuth":
           notAuth(this.props.history);
@@ -335,13 +380,23 @@ export default class PostFeed extends Component {
                         <Row>
                           <Col>
                             {this.state.self_id !== post.data.owner.id ? (
-                              <div
-                                className="postControlButton"
-                                onClick={() => this.onClickSubs(post.key)}
-                              >
-                                <div className="postControlButton-translate"></div>
-                                Subscribe
-                              </div>
+                              post.data.is_subscribed ? (
+                                <div
+                                  className="postControlButton"
+                                  onClick={() => this.onClickUnSubs(post.key)}
+                                >
+                                  <div className="postControlButton-translate"></div>
+                                  Unsubscribe
+                                </div>
+                              ) : (
+                                <div
+                                  className="postControlButton"
+                                  onClick={() => this.onClickSubs(post.key)}
+                                >
+                                  <div className="postControlButton-translate"></div>
+                                  Subscribe
+                                </div>
+                              )
                             ) : (
                               <></>
                             )}

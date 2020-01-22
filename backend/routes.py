@@ -164,9 +164,9 @@ def get_all_posts(user_id):
 @auth.login_required
 def get_posts_of_self_and_followed():
     followeds = current_user.get_followed()
-    result = current_user.get_posts()
+    result = current_user.get_posts(check_subscribed=current_user)
     for followed in followeds:
-        result.update(followed.get_posts())
+        result.update(followed.get_posts(check_subscribed=current_user))
 
     return result
 
@@ -351,4 +351,25 @@ def subscribe_user_to_post():
 
     current_user.subscribe_to_post(post)
 
-    return jsonify({'status': "Create"}), 201
+    return jsonify({'status': "Created"}), 201
+
+
+@app.route('/api/subs/delete', methods=['POST'])
+@auth.login_required
+def unsubscribe_user_to_post():
+    user_id = current_user.id
+    data = request.get_json()
+
+    if not data or 'post_id' not in data:
+        abort(400, message="Bad Json")
+
+    post = models.Post.query.get(data['post_id'])
+    if post is None:
+        abort(404)
+
+    if not current_user.is_subscribed(post):
+        abort(403, message="Already unsubscribed")
+
+    current_user.unsubscribe_from_post(post)
+
+    return jsonify({'status': "Deleted"}), 201
