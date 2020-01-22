@@ -271,6 +271,10 @@ class User(db.Model, UserMixin):
 
         return json_user
 
+    def remove(self):
+        db.session.delete(self)
+        db.session.commit()
+
 
 class AnonymousUser(AnonymousUserMixin):
     pass

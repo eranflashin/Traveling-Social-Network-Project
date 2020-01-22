@@ -91,6 +91,7 @@ export default class UserProfile extends Component {
   }
 
   unfollowUser() {
+    axios.defaults.withCredentials = true;
     axios
       .post(
         "http://127.0.0.1:5000/api/unfollow",
@@ -117,6 +118,8 @@ export default class UserProfile extends Component {
   }
 
   followUser() {
+    axios.defaults.withCredentials = true;
+
     axios
       .post(
         "http://127.0.0.1:5000/api/follow",
@@ -151,7 +154,21 @@ export default class UserProfile extends Component {
   }
 
   handleDeleteUser() {
-    //TODO: Continue Here
+    axios.defaults.withCredentials = true;
+    axios
+      .delete("http://127.0.0.1:5000/remove_account", {
+        headers: {
+          Authorization: "Basic " + btoa(localStorage.usertoken + ":")
+        }
+      })
+      .then(res => {
+        notify.show("Deleted account successfully!", "success", 3000);
+        localStorage.clear();
+        this.props.history.push("/");
+      })
+      .catch(err => {
+        notify.show("Deleting account failed", "error", 3000);
+      });
   }
 
   render() {

@@ -43,6 +43,14 @@ def get_user(user_id):
     return user.to_json(), 201
 
 
+@app.route('/remove_account', methods=['DELETE'])
+@auth.login_required
+def remove_account():
+    current_user.remove()
+
+    return jsonify({'status': 'Deleted'}), 204
+
+
 @app.route('/register', methods=['POST'])
 def register_user():
     data = request.get_json()
