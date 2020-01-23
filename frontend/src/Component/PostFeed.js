@@ -353,7 +353,13 @@ export default class PostFeed extends Component {
                         </Col>
                       </Row>
                     </Card.Header>
-                    <Card.Body>{<big>{post.data.content}</big>}</Card.Body>
+                    <Card.Body>
+                      {
+                        <big style={{ whiteSpace: "pre" }}>
+                          {post.data.content}
+                        </big>
+                      }
+                    </Card.Body>
                     <Card.Footer>
                       <Container>
                         <Row>
