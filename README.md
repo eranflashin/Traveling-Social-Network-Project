@@ -12,7 +12,7 @@ The system supports the following features:
   - Viewing users' info including followers and followed
   - Users search (with autocompletion)
   - Notification
-  - Map search for potential trip partners
+  - Map search for potential trip partners (by dates, point on map and radius)
   
   ### Installation
   
